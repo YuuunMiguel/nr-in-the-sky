@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>NR IN THE SKY - ULTIMATE</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
@@ -61,6 +61,50 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
  font-family:'Press Start 2P';font-size:10px;
  cursor:pointer;
 }
+#muteBtn{
+ position:absolute;bottom:12px;right:70px;z-index:3;
+ padding:10px;color:white;background:#17082c;
+ border:2px solid #ff59d8;
+ font-family:'Press Start 2P';font-size:10px;
+ cursor:pointer;
+}
+
+/* Controles táctiles para móviles */
+#mobileControls {
+ position: absolute;
+ bottom: 15px;
+ left: 15px;
+ right: 15px;
+ display: flex;
+ justify-content: space-between;
+ z-index: 4;
+ pointer-events: none;
+}
+.mob-btn {
+ pointer-events: auto;
+ width: 70px;
+ height: 70px;
+ background: rgba(23, 8, 44, 0.85);
+ border: 2px solid #65ffae;
+ border-radius: 50%;
+ color: #65ffae;
+ font-family: 'Press Start 2P';
+ font-size: 20px;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ box-shadow: 0 0 12px rgba(101, 255, 174, 0.4);
+ user-select: none;
+ -webkit-user-select: none;
+ cursor: pointer;
+}
+.mob-btn:active {
+ background: #ff00ce;
+ border-color: white;
+ color: white;
+ transform: scale(0.92);
+}
+
 .screen{
  position:absolute;inset:0;z-index:5;
  display:flex;flex-direction:column;
@@ -318,6 +362,13 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
 </div>
 <div id="powerContainer"></div>
 <button id="pauseBtn" onclick="togglePause()">Ⅱ</button>
+<button id="muteBtn" onclick="toggleMute()">🔊</button>
+
+<!-- Controles táctiles en pantalla para móviles -->
+<div id="mobileControls">
+ <div class="mob-btn" id="btnLeft">◀</div>
+ <div class="mob-btn" id="btnRight">▶</div>
+</div>
 
 <!-- Pantalla 1: Inicio -->
 <div id="startScreen" class="screen">
@@ -405,7 +456,6 @@ let introActive = true;
 let introAnimId = null;
 let introStartTime = null;
 
-// Lluvia de dinero masiva aumentada
 const introBills = Array.from({ length: 48 }, (_, i) => ({
  x: (i * 27 + 10) % W,
  startY: -40 - (i * 28),
@@ -416,7 +466,6 @@ const introBills = Array.from({ length: 48 }, (_, i) => ({
  phase: i * 0.7
 }));
 
-// Confetti flotante añadido
 const introConfetti = Array.from({ length: 35 }, (_, i) => ({
  x: (i * 15 + 5) % W,
  startY: -20 - (i * 22),
@@ -1024,16 +1073,28 @@ function runLooneyIntro(timestamp) {
 }
 introAnimId = requestAnimationFrame(runLooneyIntro);
 
-// --- SISTEMA DE AUDIO & MÚSICA ---
-const introMusic = new Audio('intro.mp3');
+// --- SISTEMA DE AUDIO & MÚSICA & MUTE ---
+let isMuted = false;
+
+function toggleMute() {
+ isMuted = !isMuted;
+ const muteBtn = document.getElementById("muteBtn");
+ muteBtn.textContent = isMuted ? "🔇" : "🔊";
+
+ introMusic.muted = isMuted;
+ bgMusic.muted = isMuted;
+ deadMusic.muted = isMuted;
+}
+
+const introMusic = new Audio('intro.wav');
 introMusic.loop = true;
 introMusic.volume = 0.5;
 
-const bgMusic = new Audio('fye.mp3');
+const bgMusic = new Audio('fye.wav');
 bgMusic.loop = true;
 bgMusic.volume = 0.5;
 
-const deadMusic = new Audio('dead.mp3');
+const deadMusic = new Audio('dead.wav');
 deadMusic.loop = false;
 deadMusic.volume = 0.6;
 
@@ -1067,6 +1128,7 @@ function createNoiseBuffer(duration) {
 }
 
 function playMenuClick() {
+ if (isMuted) return;
  if (!audioCtx) return;
  if (audioCtx.state === 'suspended') audioCtx.resume();
  const osc = audioCtx.createOscillator();
@@ -1084,6 +1146,7 @@ function playMenuClick() {
 }
 
 function playHitSound() {
+ if (isMuted) return;
  if (!audioCtx) return;
  if (audioCtx.state === 'suspended') audioCtx.resume();
  const osc = audioCtx.createOscillator();
@@ -1101,6 +1164,7 @@ function playHitSound() {
 }
 
 function playPowerupSound() {
+ if (isMuted) return;
  if (!audioCtx) return;
  if (audioCtx.state === 'suspended') audioCtx.resume();
  const osc = audioCtx.createOscillator();
@@ -1118,6 +1182,7 @@ function playPowerupSound() {
 }
 
 function playLeanSound() {
+ if (isMuted) return;
  if (!audioCtx) return;
  if (audioCtx.state === 'suspended') audioCtx.resume();
  const now = audioCtx.currentTime;
@@ -1165,6 +1230,7 @@ function playLeanSound() {
 }
 
 function playBurpSound() {
+ if (isMuted) return;
  if (!audioCtx) return;
  if (audioCtx.state === 'suspended') audioCtx.resume();
  const now = audioCtx.currentTime;
@@ -1225,6 +1291,7 @@ function playBurpSound() {
 }
 
 function playSmokeInhaleSound() {
+ if (isMuted) return;
  if (!audioCtx) return;
  if (audioCtx.state === 'suspended') audioCtx.resume();
  const now = audioCtx.currentTime;
@@ -1278,6 +1345,7 @@ function playSmokeInhaleSound() {
 }
 
 function playWingsSound() {
+ if (isMuted) return;
  if (!audioCtx) return;
  if (audioCtx.state === 'suspended') audioCtx.resume();
  const now = audioCtx.currentTime;
@@ -1302,6 +1370,7 @@ function playWingsSound() {
 }
 
 function playShieldSound() {
+ if (isMuted) return;
  if (!audioCtx) return;
  if (audioCtx.state === 'suspended') audioCtx.resume();
  const now = audioCtx.currentTime;
@@ -1952,6 +2021,26 @@ canvas.addEventListener("click", () => {
  if(waitingForFirstJump && running && !isDead) {
   triggerFirstJump();
  }
+});
+
+// --- CONFIGURACIÓN DE CONTROLES TÁCTILES MÓVILES ---
+window.addEventListener("DOMContentLoaded", () => {
+ const btnLeft = document.getElementById("btnLeft");
+ const btnRight = document.getElementById("btnRight");
+
+ if (!btnLeft || !btnRight) return;
+
+ btnLeft.addEventListener("touchstart", (e) => { e.preventDefault(); keys["arrowleft"] = true; });
+ btnLeft.addEventListener("touchend", (e) => { e.preventDefault(); keys["arrowleft"] = false; });
+ btnLeft.addEventListener("mousedown", () => { keys["arrowleft"] = true; });
+ btnLeft.addEventListener("mouseup", () => { keys["arrowleft"] = false; });
+ btnLeft.addEventListener("mouseleave", () => { keys["arrowleft"] = false; });
+
+ btnRight.addEventListener("touchstart", (e) => { e.preventDefault(); keys["arrowright"] = true; });
+ btnRight.addEventListener("touchend", (e) => { e.preventDefault(); keys["arrowright"] = false; });
+ btnRight.addEventListener("mousedown", () => { keys["arrowright"] = true; });
+ btnRight.addEventListener("mouseup", () => { keys["arrowright"] = false; });
+ btnRight.addEventListener("mouseleave", () => { keys["arrowright"] = false; });
 });
 
 function triggerFirstJump(){
@@ -2801,7 +2890,6 @@ function endGame(){
   localStorage.setItem("frogBest",best);
  }
 
- // Enviar puntaje a Firebase Firestore
  if (highest > 0 && playerName) {
   db.collection("leaderboard").add({
    name: playerName,
