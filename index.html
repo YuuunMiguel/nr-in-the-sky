@@ -54,22 +54,26 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
  height:100%;
  will-change:width;
 }
+
+/* BOTONES INFERIORES REDISEÑADOS */
 #pauseBtn{
- position:absolute;bottom:12px;right:12px;z-index:3;
- padding:10px;color:white;background:#17082c;
- border:2px solid #ff59d8;
- font-family:'Press Start 2P';font-size:10px;
- cursor:pointer;
+ position:absolute;bottom:15px;right:15px;z-index:10;
+ width:45px;height:45px;padding:0;color:white;background:rgba(23, 8, 44, 0.85);
+ border:2px solid #ff59d8;border-radius:10px;
+ font-family:'Press Start 2P';font-size:12px;
+ display:flex;align-items:center;justify-content:center;
+ cursor:pointer;box-shadow:0 0 10px rgba(255,89,216,0.4);
 }
 #muteBtn{
- position:absolute;bottom:12px;right:70px;z-index:3;
- padding:10px;color:white;background:#17082c;
- border:2px solid #ff59d8;
- font-family:'Press Start 2P';font-size:10px;
- cursor:pointer;
+ position:absolute;bottom:15px;left:50%;transform:translateX(-50%);z-index:10;
+ width:45px;height:45px;padding:0;color:white;background:rgba(23, 8, 44, 0.85);
+ border:2px solid #ff59d8;border-radius:10px;
+ font-family:'Press Start 2P';font-size:16px;
+ display:flex;align-items:center;justify-content:center;
+ cursor:pointer;box-shadow:0 0 10px rgba(255,89,216,0.4);
 }
 
-/* Controles táctiles para móviles */
+/* CONTROLES TÁCTILES MÓVILES OPTIMIZADOS */
 #mobileControls {
  position: absolute;
  bottom: 15px;
@@ -79,30 +83,34 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
  justify-content: space-between;
  z-index: 4;
  pointer-events: none;
+ padding: 0 10px;
 }
 .mob-btn {
  pointer-events: auto;
- width: 70px;
- height: 70px;
- background: rgba(23, 8, 44, 0.85);
+ width: 75px;
+ height: 75px;
+ background: rgba(23, 8, 44, 0.75);
+ backdrop-filter: blur(4px);
  border: 2px solid #65ffae;
  border-radius: 50%;
  color: #65ffae;
  font-family: 'Press Start 2P';
- font-size: 20px;
+ font-size: 22px;
  display: flex;
  align-items: center;
  justify-content: center;
- box-shadow: 0 0 12px rgba(101, 255, 174, 0.4);
+ box-shadow: 0 0 15px rgba(101, 255, 174, 0.4);
  user-select: none;
  -webkit-user-select: none;
  cursor: pointer;
+ transition: transform 0.1s, background 0.1s;
 }
 .mob-btn:active {
- background: #ff00ce;
+ background: rgba(255, 0, 206, 0.85);
  border-color: white;
  color: white;
- transform: scale(0.92);
+ transform: scale(0.90);
+ box-shadow: 0 0 20px rgba(255, 0, 206, 0.8);
 }
 
 .screen{
@@ -361,8 +369,10 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
  <div>BEST: <span id="best">0</span>m</div>
 </div>
 <div id="powerContainer"></div>
-<button id="pauseBtn" onclick="togglePause()">Ⅱ</button>
+
+<!-- Botones inferiores en medio y derecha -->
 <button id="muteBtn" onclick="toggleMute()">🔊</button>
+<button id="pauseBtn" onclick="togglePause()">Ⅱ</button>
 
 <!-- Controles táctiles en pantalla para móviles -->
 <div id="mobileControls">
@@ -477,6 +487,7 @@ const introConfetti = Array.from({ length: 35 }, (_, i) => ({
 
 function finishIntro() {
  if (!introActive) return;
+ unlockAudioContext();
  introActive = false;
  cancelAnimationFrame(introAnimId);
  const el = document.getElementById("looneyIntro");
@@ -1073,10 +1084,21 @@ function runLooneyIntro(timestamp) {
 }
 introAnimId = requestAnimationFrame(runLooneyIntro);
 
-// --- SISTEMA DE AUDIO & MÚSICA & MUTE ---
+// --- SISTEMA DE AUDIO & MÚSICA & MUTE (OPTIMIZADO MÓVIL) ---
 let isMuted = false;
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function unlockAudioContext() {
+ if (audioCtx && audioCtx.state === 'suspended') {
+  audioCtx.resume();
+ }
+}
+
+window.addEventListener('pointerdown', unlockAudioContext, { once: true });
+window.addEventListener('touchstart', unlockAudioContext, { once: true });
 
 function toggleMute() {
+ unlockAudioContext();
  isMuted = !isMuted;
  const muteBtn = document.getElementById("muteBtn");
  muteBtn.textContent = isMuted ? "🔇" : "🔊";
@@ -1115,8 +1137,6 @@ function fadeOutAudio(audio, duration = 1000) {
  }, stepTime);
 }
 
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
 function createNoiseBuffer(duration) {
  const bufferSize = Math.floor(audioCtx.sampleRate * duration);
  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
@@ -1129,8 +1149,7 @@ function createNoiseBuffer(duration) {
 
 function playMenuClick() {
  if (isMuted) return;
- if (!audioCtx) return;
- if (audioCtx.state === 'suspended') audioCtx.resume();
+ unlockAudioContext();
  const osc = audioCtx.createOscillator();
  const gain = audioCtx.createGain();
  osc.connect(gain);
@@ -1147,8 +1166,7 @@ function playMenuClick() {
 
 function playHitSound() {
  if (isMuted) return;
- if (!audioCtx) return;
- if (audioCtx.state === 'suspended') audioCtx.resume();
+ unlockAudioContext();
  const osc = audioCtx.createOscillator();
  const gain = audioCtx.createGain();
  osc.connect(gain);
@@ -1165,8 +1183,7 @@ function playHitSound() {
 
 function playPowerupSound() {
  if (isMuted) return;
- if (!audioCtx) return;
- if (audioCtx.state === 'suspended') audioCtx.resume();
+ unlockAudioContext();
  const osc = audioCtx.createOscillator();
  const gain = audioCtx.createGain();
  osc.connect(gain);
@@ -1183,8 +1200,7 @@ function playPowerupSound() {
 
 function playLeanSound() {
  if (isMuted) return;
- if (!audioCtx) return;
- if (audioCtx.state === 'suspended') audioCtx.resume();
+ unlockAudioContext();
  const now = audioCtx.currentTime;
  [0, 0.09, 0.19].forEach((offset, idx) => {
   const iceOsc = audioCtx.createOscillator();
@@ -1231,8 +1247,7 @@ function playLeanSound() {
 
 function playBurpSound() {
  if (isMuted) return;
- if (!audioCtx) return;
- if (audioCtx.state === 'suspended') audioCtx.resume();
+ unlockAudioContext();
  const now = audioCtx.currentTime;
  const gulpOsc = audioCtx.createOscillator();
  const gulpGain = audioCtx.createGain();
@@ -1292,8 +1307,7 @@ function playBurpSound() {
 
 function playSmokeInhaleSound() {
  if (isMuted) return;
- if (!audioCtx) return;
- if (audioCtx.state === 'suspended') audioCtx.resume();
+ unlockAudioContext();
  const now = audioCtx.currentTime;
  const inhale = audioCtx.createBufferSource();
  inhale.buffer = createNoiseBuffer(0.62);
@@ -1346,8 +1360,7 @@ function playSmokeInhaleSound() {
 
 function playWingsSound() {
  if (isMuted) return;
- if (!audioCtx) return;
- if (audioCtx.state === 'suspended') audioCtx.resume();
+ unlockAudioContext();
  const now = audioCtx.currentTime;
  [0, 0.18].forEach((offset, idx) => {
   const flap = audioCtx.createBufferSource();
@@ -1371,8 +1384,7 @@ function playWingsSound() {
 
 function playShieldSound() {
  if (isMuted) return;
- if (!audioCtx) return;
- if (audioCtx.state === 'suspended') audioCtx.resume();
+ unlockAudioContext();
  const now = audioCtx.currentTime;
  [523.25, 783.99, 1046.5].forEach((freq, idx) => {
   const osc = audioCtx.createOscillator();
@@ -2030,13 +2042,13 @@ window.addEventListener("DOMContentLoaded", () => {
 
  if (!btnLeft || !btnRight) return;
 
- btnLeft.addEventListener("touchstart", (e) => { e.preventDefault(); keys["arrowleft"] = true; });
+ btnLeft.addEventListener("touchstart", (e) => { e.preventDefault(); keys["arrowleft"] = true; unlockAudioContext(); });
  btnLeft.addEventListener("touchend", (e) => { e.preventDefault(); keys["arrowleft"] = false; });
  btnLeft.addEventListener("mousedown", () => { keys["arrowleft"] = true; });
  btnLeft.addEventListener("mouseup", () => { keys["arrowleft"] = false; });
  btnLeft.addEventListener("mouseleave", () => { keys["arrowleft"] = false; });
 
- btnRight.addEventListener("touchstart", (e) => { e.preventDefault(); keys["arrowright"] = true; });
+ btnRight.addEventListener("touchstart", (e) => { e.preventDefault(); keys["arrowright"] = true; unlockAudioContext(); });
  btnRight.addEventListener("touchend", (e) => { e.preventDefault(); keys["arrowright"] = false; });
  btnRight.addEventListener("mousedown", () => { keys["arrowright"] = true; });
  btnRight.addEventListener("mouseup", () => { keys["arrowright"] = false; });
@@ -2063,6 +2075,7 @@ function clearNameError() {
 }
 
 function goToShopScreen() {
+ unlockAudioContext();
  const inputEl = document.getElementById("playerNameInput");
  const errorEl = document.getElementById("nameErrorMsg");
  const nameInput = inputEl.value.trim();
@@ -2075,7 +2088,7 @@ function goToShopScreen() {
   errorEl.textContent = "⚠️ ¡PON UN NOMBRE PARA JUGAR!";
   inputEl.focus();
   return;
- }
+}
 
  playMenuClick();
  clearNameError();
@@ -2110,6 +2123,7 @@ function goToShopScreenFromDeath() {
 }
 
 function startReadyGame() {
+ unlockAudioContext();
  cancelAnimationFrame(avatarAnimId);
  fadeOutAudio(introMusic, 600);
  bgMusic.currentTime = 0;
@@ -3390,6 +3404,7 @@ function drawCap(targetCtx = ctx){
  targetCtx.stroke();
 
  targetCtx.strokeStyle="#6aff91";
+ targetCtx.lineWidth=1.5;
  targetCtx.beginPath();
  targetCtx.moveTo(-13,-17);
  targetCtx.lineTo(20,-17);
