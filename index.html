@@ -7,31 +7,28 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
 
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{
  margin:0;background:#08040f;color:white;
  height:100vh;display:flex;align-items:center;
  justify-content:center;overflow:hidden;
  font-family:'VT323',monospace;
+ touch-action:none;
 }
 #game{
  position:relative;width:min(100vw,450px);
  height:min(100vh,760px);overflow:hidden;
  background:#1a82e2;
- border:none;
- box-shadow:none;
 }
-canvas{width:100%;height:100%;display:block;will-change:filter}
+canvas{width:100%;height:100%;display:block;}
 #hud{
  position:absolute;top:12px;left:12px;right:12px;
  display:flex;justify-content:space-between;align-items:center;
  pointer-events:none;font-size:19px;z-index:2;
 }
 #hud div{
- padding:5px 8px;background:#080414d9;
+ padding:5px 8px;background:rgba(8,4,20,0.88);
  border:1px solid #65ffae;
- box-shadow:0 0 10px #00ffad;
- text-shadow:0 0 6px #65ffae;
 }
 #livesDisplay{letter-spacing:2px;}
 #powerContainer{
@@ -43,17 +40,16 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
  display:flex;flex-direction:column;gap:2px;
 }
 .power-label{
- font-size:16px;text-shadow:0 0 6px #000;
+ font-size:16px;
  line-height:1;
 }
 .timer-bar-bg{
- width:100%;height:6px;background:rgba(0,0,0,0.45);
+ width:100%;height:6px;background:rgba(0,0,0,0.55);
  border:1px solid rgba(255,255,255,0.25);
  border-radius:3px;overflow:hidden;
 }
 .timer-bar-fill{
  height:100%;
- will-change:width;
 }
 
 /* CONTROLES INFERIORES CENTRALES (MUTE Y PAUSA JUNTOS) */
@@ -72,8 +68,7 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
  height: 45px;
  padding: 0;
  color: white;
- background: rgba(23, 8, 44, 0.85);
- backdrop-filter: blur(6px);
+ background: rgba(23, 8, 44, 0.9);
  border: 2px solid #ff59d8;
  border-radius: 12px;
  font-family: 'Press Start 2P';
@@ -82,17 +77,13 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
  align-items: center;
  justify-content: center;
  cursor: pointer;
- box-shadow: 0 0 12px rgba(255, 89, 216, 0.4);
- transition: transform 0.15s, background 0.15s, border-color 0.15s;
  user-select: none;
  -webkit-user-select: none;
 }
 .ctrl-btn:active {
  transform: scale(0.90);
- background: rgba(255, 0, 206, 0.9);
+ background: #ff00ce;
  border-color: #65ffae;
- color: white;
- box-shadow: 0 0 18px rgba(255, 0, 206, 0.8);
 }
 
 .screen{
@@ -100,13 +91,29 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
  display:flex;flex-direction:column;
  align-items:center;justify-content:center;
  text-align:center;padding:12px;
- background:radial-gradient(ellipse at center,#32105bed,#060312f7);
+ background:radial-gradient(ellipse at center,#32105bf2,#060312fa);
 }
+
+/* EFECTOS VISUALES AVANZADOS EXCLUSIVOS PARA PC (PANTALLAS GRANDES) */
+@media (min-width: 769px) and (hover: hover) {
+ .screen {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: radial-gradient(ellipse at center, rgba(50, 16, 91, 0.88), rgba(6, 3, 18, 0.95));
+ }
+ .ctrl-btn {
+  box-shadow: 0 0 12px rgba(255, 89, 216, 0.45);
+ }
+ .shop-kiosk-container, .death-box {
+  box-shadow: 0 0 22px rgba(156, 0, 255, 0.35);
+ }
+}
+
 .screen h1{
  font-family:'Press Start 2P';
  font-size:clamp(16px,5vw,22px);
  line-height:1.4;color:#78ff9c;
- text-shadow:0 0 15px #00ff8c,4px 4px #d000ff;
+ text-shadow:3px 3px #d000ff;
  margin:2px 0;
 }
 .screen p{font-size:18px;line-height:1.2;margin:4px 0;}
@@ -114,13 +121,12 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
  display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;margin:2px 0;
 }
 .input-label{
- font-family:'Press Start 2P';font-size:7px;color:#ff5de5;text-shadow:0 0 6px #ff00ce;
+ font-family:'Press Start 2P';font-size:7px;color:#ff5de5;
 }
 .screen input{
  font-family:'VT323',monospace;font-size:20px;
  padding:4px 8px;background:#100822;border:2px solid #65ffae;
  color:#65ffae;text-align:center;width:70%;max-width:180px;
- box-shadow:0 0 10px rgba(101,255,174,0.4);
  outline:none;border-radius:4px;
 }
 .screen input::placeholder{
@@ -129,14 +135,12 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
 }
 .screen input.input-error{
  border-color: #ff3b5c;
- box-shadow: 0 0 14px rgba(255, 59, 92, 0.85);
  animation: inputShake 0.3s ease;
 }
 .error-msg{
  font-family: 'Press Start 2P', monospace;
  font-size: 7px;
  color: #ff4d79;
- text-shadow: 0 0 6px #ff0055;
  margin-top: 3px;
  min-height: 10px;
 }
@@ -155,12 +159,11 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
  gap: 10px;
  width: 96%;
  max-width: 390px;
- background: rgba(16, 7, 32, 0.95);
+ background: rgba(16, 7, 32, 0.96);
  border: 2px solid #ff00ce;
  border-radius: 8px;
  padding: 8px 10px;
  margin: 4px 0;
- box-shadow: 0 0 15px rgba(255,0,206,0.3);
 }
 .shop-left-pane {
  display: flex;
@@ -168,7 +171,7 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
  align-items: center;
  gap: 4px;
  flex-shrink: 0;
- background: rgba(8, 3, 20, 0.6);
+ background: rgba(8, 3, 20, 0.7);
  border: 1px solid #9c00ff;
  padding: 6px;
  border-radius: 6px;
@@ -178,7 +181,6 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
 }
 .money-badge {
  font-family:'Press Start 2P'; font-size:7px; color:#ffbe2e;
- text-shadow:0 0 6px #ffbe2e;
 }
 .shop-right-pane {
  flex-grow: 1;
@@ -201,14 +203,12 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
  background: #1c0b36 !important;
  color: #d8ffff !important;
  border: 1px solid #9c00ff !important;
- box-shadow: none !important;
  flex: 1;
 }
 .shop-tab-btn.active {
  background: #ff00ce !important;
  color: #fff !important;
  border-color: #65ffae !important;
- box-shadow: 0 0 8px #ff00ce !important;
 }
 .color-grid {
  display: grid;
@@ -227,23 +227,20 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
 .color-btn {
  width:32px;height:32px;border-radius:50%;cursor:pointer;
  border:2px solid rgba(255,255,255,0.7);
- box-shadow:0 0 5px rgba(255,255,255,0.3);
- transition:transform 0.15s; position:relative;
+ position:relative;
  display:flex;align-items:center;justify-content:center;
  font-size:15px;
 }
-.color-btn:hover { transform: scale(1.12); }
-.color-btn.selected { border:3px solid #65ffae; box-shadow:0 0 10px #65ffae; transform: scale(1.08); }
+.color-btn.selected { border:3px solid #65ffae; transform: scale(1.08); }
 .skin-price {
  font-family:'Press Start 2P';font-size:5px;color:#ffbe2e;
 }
 
 .leaderboard-box{
- background:rgba(12, 5, 26, 0.75);
+ background:rgba(12, 5, 26, 0.85);
  border:2px dashed #9c00ff;
  padding:3px 6px;margin:2px 0;
  width:90%;max-width:300px;border-radius:6px;
- box-shadow:0 0 10px rgba(156,0,255,0.3);
 }
 .leaderboard-box h3{
  font-family:'Press Start 2P';font-size:7px;color:#ff5de5;margin:2px 0;
@@ -260,18 +257,16 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
  font-family:'Press Start 2P';font-size:9px;
  padding:8px 14px;color:#080511;background:#76ff9c;
  border:3px solid white;
- box-shadow:0 0 12px #00ffae,0 0 20px #ff00ce;
  cursor:pointer;margin-top:4px;
- transition:transform 0.15s, background 0.15s;
 }
-.screen button:hover{transform:scale(1.05);background:#ff5de5}
+.screen button:active{transform:scale(0.96);background:#ff5de5}
 .hidden{display:none!important}
 
 /* Intro tipo Looney Tunes */
 #looneyIntro{
  position:absolute;inset:0;z-index:20;
  background:#07020e;cursor:pointer;
- transition:opacity 0.45s ease-out;
+ transition:opacity 0.35s ease-out;
 }
 #looneyIntro.fade-out{
  opacity:0;pointer-events:none;
@@ -282,57 +277,44 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
 .skip-hint{
  position:absolute;bottom:14px;left:0;right:0;
  text-align:center;font-family:'Press Start 2P';
- font-size:8px;color:rgba(255,255,255,0.75);
+ font-size:8px;color:rgba(255,255,255,0.8);
  pointer-events:none;
- animation: blinkHint 1.1s infinite alternate;
-}
-@keyframes blinkHint {
- from { opacity: 0.35; }
- to { opacity: 0.95; }
 }
 
 #gameOverOverlay{
  position:absolute;inset:0;z-index:10;
  display:flex;flex-direction:column;align-items:center;justify-content:center;
- background:rgba(12, 4, 24, 0.65);
- animation: fadeIn 0.35s ease-out;
+ background:rgba(12, 4, 24, 0.78);
  padding:16px;
-}
-@keyframes fadeIn {
- from { opacity: 0; transform: translateY(12px) scale(0.96); }
- to { opacity: 1; transform: translateY(0) scale(1); }
 }
 .death-banner{
  background:linear-gradient(90deg, #ff0055, #9c00ff, #ff0055);
  border:2px solid #fff;
- box-shadow:0 0 18px #ff007f;
  padding:8px 18px;margin-bottom:10px;
  transform:rotate(-2deg);
  font-family:'Press Start 2P';font-size:12px;color:#fff;
 }
 .death-box{
- background:rgba(16, 7, 32, 0.88);
+ background:rgba(16, 7, 32, 0.94);
  border:3px solid #65ffae;
- box-shadow:0 0 28px rgba(101, 255, 174, 0.45);
  padding:16px 20px;border-radius:10px;width:88%;max-width:340px;
  text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;
 }
 .death-box h2{
  font-family:'Press Start 2P';font-size:17px;color:#ff4d79;
- text-shadow:0 0 12px #ff3b5c;margin:0;
+ margin:0;
 }
 .death-box p{font-size:20px;margin:2px 0;color:#e8fff3;}
 .death-box .stats-row{
  display:flex;justify-content:space-around;width:100%;
- background:rgba(0,0,0,0.45);border:1px solid #ff59d8;
+ background:rgba(0,0,0,0.55);border:1px solid #ff59d8;
  padding:6px 10px;border-radius:6px;margin-top:4px;
 }
 .death-box button{
  font-family:'Press Start 2P';font-size:11px;padding:12px 20px;
  color:#080511;background:#65ffae;border:2px solid white;
- box-shadow:0 0 15px #65ffae;cursor:pointer;margin-top:8px;
+ cursor:pointer;margin-top:8px;
 }
-.death-box button:hover{background:#ff59d8;color:white;transform:scale(1.05);}
 </style>
 </head>
 <body>
@@ -342,7 +324,7 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
 <!-- Intro animado estilo Looney Tunes -->
 <div id="looneyIntro" onclick="finishIntro()">
  <canvas id="introCanvas" width="450" height="760"></canvas>
- <div class="skip-hint">TOCA PARA CONTINUAR</div>
+ <div class="skip-hint">TOCA / CLIC PARA CONTINUAR</div>
 </div>
 
 <div id="hud">
@@ -436,28 +418,31 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 const canvas=document.getElementById("canvas");
-const ctx=canvas.getContext("2d", { alpha: false });
+const ctx=canvas.getContext("2d", { alpha: false, desynchronized: true });
 const W=450,H=760;
+
+// --- DETECCIÓN DE DISPOSITIVO MÓVIL ---
+const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.matchMedia("(pointer: coarse)").matches;
 
 // --- INTRO ANIMADO ESTILO LOONEY TUNES ---
 let introActive = true;
 let introAnimId = null;
 let introStartTime = null;
 
-const introBills = Array.from({ length: 48 }, (_, i) => ({
+const introBills = Array.from({ length: 30 }, (_, i) => ({
  x: (i * 27 + 10) % W,
  startY: -40 - (i * 28),
- speed: 110 + (i % 6) * 32,
+ speed: 120 + (i % 6) * 32,
  swayAmp: 18 + (i % 5) * 8,
  swayFreq: 2.5 + (i % 4) * 0.8,
  rotSpeed: (i % 2 === 0 ? 1 : -1) * (2.2 + (i % 4) * 0.6),
  phase: i * 0.7
 }));
 
-const introConfetti = Array.from({ length: 35 }, (_, i) => ({
+const introConfetti = Array.from({ length: 22 }, (_, i) => ({
  x: (i * 15 + 5) % W,
  startY: -20 - (i * 22),
- speed: 70 + (i % 4) * 25,
+ speed: 80 + (i % 4) * 25,
  size: 4 + (i % 4) * 2,
  color: ['#ff3366', '#ffbe2e', '#35e958', '#00eaff', '#ff00ce'][i % 5],
  wobble: (i % 2 === 0 ? 1 : -1) * (1 + (i % 3) * 0.5)
@@ -470,7 +455,7 @@ function finishIntro() {
  cancelAnimationFrame(introAnimId);
  const el = document.getElementById("looneyIntro");
  el.classList.add("fade-out");
- setTimeout(() => el.remove(), 460);
+ setTimeout(() => el.remove(), 360);
 }
 
 function drawFloatingWaveText(ictx, text, centerX, centerY, timeSec, fontSize, fillColor, shadowColor) {
@@ -499,7 +484,7 @@ function drawFloatingWaveText(ictx, text, centerX, centerY, timeSec, fontSize, f
   ictx.fillStyle = shadowColor;
   ictx.fillText(ch, 4, 5);
 
-  ictx.lineWidth = 4;
+  ictx.lineWidth = 3;
   ictx.strokeStyle = "#080312";
   ictx.strokeText(ch, 0, 0);
 
@@ -518,11 +503,6 @@ function drawIntroDollar(ictx, x, y, angle) {
  ictx.lineWidth = 1.5;
  ictx.fillRect(-13, -6.5, 26, 13);
  ictx.strokeRect(-13, -6.5, 26, 13);
-
- ictx.strokeStyle = "#9effb3";
- ictx.lineWidth = 1;
- ictx.strokeRect(-10, -4, 20, 8);
-
  ictx.fillStyle = "#0d4a1c";
  ictx.font = "bold 9px Arial";
  ictx.textAlign = "center";
@@ -535,35 +515,16 @@ function drawIntroBottle(ictx, x, y, angle, labelColor) {
  ictx.save();
  ictx.translate(x, y);
  ictx.rotate(angle);
-
  ictx.fillStyle = "#16291d";
  ictx.strokeStyle = "#78ff9c";
  ictx.lineWidth = 1.4;
- ictx.beginPath();
- ictx.roundRect(-7, -8, 14, 24, 3);
- ictx.fill();
- ictx.stroke();
-
- ictx.fillStyle = "#16291d";
+ ictx.fillRect(-7, -8, 14, 24);
+ ictx.strokeRect(-7, -8, 14, 24);
  ictx.fillRect(-3.5, -20, 7, 13);
- ictx.strokeRect(-3.5, -20, 7, 13);
-
  ictx.fillStyle = "#ffbe2e";
  ictx.fillRect(-4, -23, 8, 4);
-
  ictx.fillStyle = labelColor;
  ictx.fillRect(-5.5, -1, 11, 9);
-
- ictx.fillStyle = "rgba(255,255,255,0.45)";
- ictx.fillRect(-4.5, -6, 2, 18);
-
- ictx.fillStyle = "#fff59e";
- ictx.beginPath();
- ictx.arc(0, -27, 2.5, 0, Math.PI * 2);
- ictx.arc(-4, -31, 2, 0, Math.PI * 2);
- ictx.arc(4, -30, 2, 0, Math.PI * 2);
- ictx.fill();
-
  ictx.restore();
 }
 
@@ -610,10 +571,6 @@ function drawLadyFrog(ictx, x, y, elapsed, side, bikiniColor, bodyColor, lightCo
  ictx.arc(5.5, 4, 5, 0, Math.PI * 2);
  ictx.fill();
  ictx.stroke();
- ictx.beginPath();
- ictx.moveTo(-5.5, 4);
- ictx.lineTo(5.5, 4);
- ictx.stroke();
 
  ictx.fillStyle = bodyColor;
  ictx.beginPath();
@@ -638,24 +595,9 @@ function drawLadyFrog(ictx, x, y, elapsed, side, bikiniColor, bodyColor, lightCo
  ictx.arc(9 + side * -1.2, -21, 2.5, 0, Math.PI * 2);
  ictx.fill();
 
- ictx.strokeStyle = "#080312";
- ictx.lineWidth = 1.6;
- ictx.beginPath();
- ictx.moveTo(-13, -24); ictx.lineTo(-16, -27);
- ictx.moveTo(-10, -25.5); ictx.lineTo(-11, -29);
- ictx.moveTo(13, -24); ictx.lineTo(16, -27);
- ictx.moveTo(10, -25.5); ictx.lineTo(11, -29);
- ictx.stroke();
-
  ictx.fillStyle = "#ff2a85";
  ictx.beginPath();
  ictx.ellipse(0, -6, 5, 2.5, 0, 0, Math.PI * 2);
- ictx.fill();
-
- ictx.fillStyle = "rgba(255, 110, 180, 0.65)";
- ictx.beginPath();
- ictx.arc(-12, -10, 2.8, 0, Math.PI * 2);
- ictx.arc(12, -10, 2.8, 0, Math.PI * 2);
  ictx.fill();
 
  const armWave = Math.sin(elapsed * 6 + side) * 0.25;
@@ -664,7 +606,6 @@ function drawLadyFrog(ictx, x, y, elapsed, side, bikiniColor, bodyColor, lightCo
  ictx.rotate(side * (-0.75 + armWave));
  ictx.strokeStyle = bodyColor;
  ictx.lineWidth = 4.5;
- ictx.lineCap = "round";
  ictx.beginPath();
  ictx.moveTo(0, 0);
  ictx.lineTo(side * 16, -12);
@@ -677,13 +618,11 @@ function drawLadyFrog(ictx, x, y, elapsed, side, bikiniColor, bodyColor, lightCo
  ictx.rotate(side * (0.5 - armWave * 0.6));
  ictx.strokeStyle = bodyColor;
  ictx.lineWidth = 4.5;
- ictx.lineCap = "round";
  ictx.beginPath();
  ictx.moveTo(0, 0);
  ictx.lineTo(-side * 13, -8);
  ictx.stroke();
  drawIntroDollar(ictx, -side * 16, -11, -0.3);
- drawIntroDollar(ictx, -side * 18, -15, 0.2);
  ictx.restore();
 
  ictx.restore();
@@ -693,19 +632,12 @@ function drawIntroPorsche(ictx, x, y) {
  ictx.save();
  ictx.translate(x, y);
 
- const shadowGrad = ictx.createRadialGradient(0, 26, 5, 0, 26, 75);
- shadowGrad.addColorStop(0, "rgba(0,0,0,0.75)");
- shadowGrad.addColorStop(1, "rgba(0,0,0,0)");
- ictx.fillStyle = shadowGrad;
+ ictx.fillStyle = "rgba(0,0,0,0.55)";
  ictx.beginPath();
  ictx.ellipse(0, 26, 75, 14, 0, 0, Math.PI * 2);
  ictx.fill();
 
- const pBodyGrad = ictx.createLinearGradient(-65, -20, 65, 20);
- pBodyGrad.addColorStop(0, "#ffe100");
- pBodyGrad.addColorStop(0.5, "#ffb700");
- pBodyGrad.addColorStop(1, "#cca000");
- ictx.fillStyle = pBodyGrad;
+ ictx.fillStyle = "#ffd000";
  ictx.strokeStyle = "#594600";
  ictx.lineWidth = 2;
  ictx.beginPath();
@@ -722,16 +654,8 @@ function drawIntroPorsche(ictx, x, y) {
  ictx.fillStyle = "#1a1a1a";
  ictx.fillRect(-8, -22, 5, 36);
  ictx.fillRect(3, -22, 5, 36);
-
  ictx.fillStyle = "#111";
  ictx.fillRect(-62, 12, 124, 8);
- ictx.fillStyle = "#222";
- ictx.fillRect(-22, 14, 44, 5);
- ictx.strokeStyle = "#444";
- ictx.lineWidth = 0.8;
- for(let gx = -18; gx <= 18; gx += 4) {
-  ictx.beginPath(); ictx.moveTo(gx, 14); ictx.lineTo(gx, 19); ictx.stroke();
- }
 
  ictx.fillStyle = "#0c1724";
  ictx.beginPath();
@@ -744,28 +668,15 @@ function drawIntroPorsche(ictx, x, y) {
  ictx.lineWidth = 1.2;
  ictx.stroke();
 
- ictx.fillStyle = "rgba(255,255,255,0.22)";
- ictx.beginPath();
- ictx.moveTo(-15, -30);
- ictx.lineTo(-5, -45);
- ictx.lineTo(2, -45);
- ictx.lineTo(-8, -30);
- ictx.closePath();
- ictx.fill();
-
  [ -52, 52 ].forEach(hx => {
-  ictx.fillStyle = "#fff";
-  ictx.shadowColor = "#00ffff";
-  ictx.shadowBlur = 14;
+  ictx.fillStyle = "rgba(0,255,255,0.35)";
   ictx.beginPath();
-  ictx.arc(hx, 1, 6.5, 0, Math.PI * 2);
+  ictx.arc(hx, 1, 10, 0, Math.PI * 2);
   ictx.fill();
-  ictx.shadowBlur = 0;
-  ictx.strokeStyle = "#00bcd4";
-  ictx.lineWidth = 1.5;
+  ictx.fillStyle = "#fff";
   ictx.beginPath();
-  ictx.arc(hx, 1, 4, 0, Math.PI * 2);
-  ictx.stroke();
+  ictx.arc(hx, 1, 6, 0, Math.PI * 2);
+  ictx.fill();
  });
 
  [ -42, 42 ].forEach(wheelX => {
@@ -773,17 +684,9 @@ function drawIntroPorsche(ictx, x, y) {
   ictx.beginPath();
   ictx.arc(wheelX, 17, 13, 0, Math.PI * 2);
   ictx.fill();
-  ictx.strokeStyle = "#333";
-  ictx.lineWidth = 2.5;
-  ictx.stroke();
-
   ictx.fillStyle = "#d8d8d8";
   ictx.beginPath();
   ictx.arc(wheelX, 17, 6, 0, Math.PI * 2);
-  ictx.fill();
-  ictx.fillStyle = "#222";
-  ictx.beginPath();
-  ictx.arc(wheelX, 17, 2, 0, Math.PI * 2);
   ictx.fill();
  });
 
@@ -794,19 +697,12 @@ function drawIntroRamTruck(ictx, x, y) {
  ictx.save();
  ictx.translate(x, y);
 
- const rShadow = ictx.createRadialGradient(0, 28, 6, 0, 28, 85);
- rShadow.addColorStop(0, "rgba(0,0,0,0.8)");
- rShadow.addColorStop(1, "rgba(0,0,0,0)");
- ictx.fillStyle = rShadow;
+ ictx.fillStyle = "rgba(0,0,0,0.6)";
  ictx.beginPath();
  ictx.ellipse(0, 28, 85, 16, 0, 0, Math.PI * 2);
  ictx.fill();
 
- const rBodyGrad = ictx.createLinearGradient(-75, -25, 75, 25);
- rBodyGrad.addColorStop(0, "#384738");
- rBodyGrad.addColorStop(0.5, "#253025");
- rBodyGrad.addColorStop(1, "#182118");
- ictx.fillStyle = rBodyGrad;
+ ictx.fillStyle = "#2b382b";
  ictx.strokeStyle = "#0d140d";
  ictx.lineWidth = 2.5;
  ictx.beginPath();
@@ -821,20 +717,8 @@ function drawIntroRamTruck(ictx, x, y) {
  ictx.stroke();
 
  ictx.fillStyle = "#1a1a1a";
- ictx.strokeStyle = "#444";
- ictx.lineWidth = 1.5;
  ictx.fillRect(-82, -2, 14, 22);
- ictx.strokeRect(-82, -2, 14, 22);
  ictx.fillRect(-74, -12, 8, 32);
- ictx.strokeRect(-74, -12, 8, 32);
-
- ictx.fillStyle = "#0a0a0a";
- ictx.fillRect(-64, -26, 22, 28);
- ictx.strokeStyle = "#555";
- ictx.lineWidth = 1;
- for(let by = -22; by <= -2; by += 5) {
-  ictx.beginPath(); ictx.moveTo(-64, by); ictx.lineTo(-42, by); ictx.stroke();
- }
 
  ictx.fillStyle = "#060b09";
  ictx.beginPath();
@@ -849,18 +733,12 @@ function drawIntroRamTruck(ictx, x, y) {
  ictx.stroke();
 
  ictx.fillStyle = "#fff";
- ictx.shadowColor = "#ff0055";
- ictx.shadowBlur = 10;
  ictx.fillRect(-15, -58, 30, 4);
- ictx.shadowBlur = 0;
 
  [ -68, 68 ].forEach(fx => {
   ictx.fillStyle = "#00ffff";
-  ictx.shadowColor = "#00ffff";
-  ictx.shadowBlur = 12;
   ictx.fillRect(fx > 0 ? fx - 3 : fx, -16, 5, 5);
   ictx.fillRect(fx > 0 ? fx - 3 : fx, -8, 5, 5);
-  ictx.shadowBlur = 0;
  });
 
  [ -48, 48 ].forEach(wheelX => {
@@ -868,24 +746,9 @@ function drawIntroRamTruck(ictx, x, y) {
   ictx.beginPath();
   ictx.arc(wheelX, 19, 17, 0, Math.PI * 2);
   ictx.fill();
-  ictx.strokeStyle = "#333";
-  ictx.lineWidth = 4;
-  ictx.stroke();
-
-  for(let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
-   let tx = wheelX + Math.cos(a) * 15;
-   let ty = 19 + Math.sin(a) * 15;
-   ictx.fillStyle = "#222";
-   ictx.fillRect(tx - 2, ty - 2, 4, 4);
-  }
-
   ictx.fillStyle = "#666";
   ictx.beginPath();
   ictx.arc(wheelX, 19, 7, 0, Math.PI * 2);
-  ictx.fill();
-  ictx.fillStyle = "#111";
-  ictx.beginPath();
-  ictx.arc(wheelX, 19, 3, 0, Math.PI * 2);
   ictx.fill();
  });
 
@@ -899,13 +762,11 @@ function runLooneyIntro(timestamp) {
 
  const ic = document.getElementById("introCanvas");
  if (!ic) return;
- const ictx = ic.getContext("2d");
-
- ictx.clearRect(0, 0, W, H);
+ const ictx = ic.getContext("2d", { alpha: false });
 
  const ringColors = ["#280949", "#3f0f70", "#59189a", "#7821c4", "#9c00ff", "#ff00ce"];
  const maxR = Math.hypot(W / 2, H / 2) + 40;
- const ringStep = 38;
+ const ringStep = 45;
  const pulseOffset = (elapsed * 45) % ringStep;
 
  for (let r = maxR + ringStep; r > 0; r -= ringStep) {
@@ -915,12 +776,6 @@ function runLooneyIntro(timestamp) {
   ictx.arc(W / 2, H / 2 - 20, r, 0, Math.PI * 2);
   ictx.fill();
  }
-
- const centerGrad = ictx.createRadialGradient(W / 2, H / 2 - 20, 10, W / 2, H / 2 - 20, 185);
- centerGrad.addColorStop(0, "rgba(101, 255, 174, 0.35)");
- centerGrad.addColorStop(1, "rgba(12, 4, 24, 0)");
- ictx.fillStyle = centerGrad;
- ictx.fillRect(0, 0, W, H);
 
  drawIntroPorsche(ictx, W / 2 - 95, H / 2 + 75);
  drawIntroRamTruck(ictx, W / 2 + 95, H / 2 + 75);
@@ -1012,26 +867,10 @@ function runLooneyIntro(timestamp) {
  ictx.fillRect(0, -2.5, 18, 5);
  ictx.fillStyle = "#d58d54";
  ictx.fillRect(0, -2.5, 4.5, 5);
-
- const emberPulse = 0.5 + Math.sin(elapsed * 12) * 0.5;
- ictx.fillStyle = `rgb(255, ${Math.floor(40 + emberPulse * 120)}, 20)`;
- ictx.shadowColor = "#ff2200";
- ictx.shadowBlur = 8 + emberPulse * 6;
+ ictx.fillStyle = "#ff3314";
  ictx.beginPath();
- ictx.arc(18, 0, 3 + emberPulse * 0.8, 0, Math.PI * 2);
+ ictx.arc(18, 0, 3.2, 0, Math.PI * 2);
  ictx.fill();
- ictx.shadowBlur = 0;
-
- for(let s = 0; s < 4; s++){
-  const smokeProg = ((elapsed * 2.8 + s * 0.28) % 1);
-  const sx = 19 + Math.sin(smokeProg * 7 + s + elapsed * 3) * 6;
-  const sy = -3 - smokeProg * 28;
-  const sAlpha = (1 - smokeProg) * 0.8;
-  ictx.fillStyle = `rgba(200, 255, 220, ${sAlpha})`;
-  ictx.beginPath();
-  ictx.arc(sx, sy, 2 + smokeProg * 4, 0, Math.PI * 2);
-  ictx.fill();
- }
  ictx.restore();
  ictx.restore();
 
@@ -1632,13 +1471,6 @@ function drawAccessory(targetCtx = ctx, accId = currentAcc.id, isPreview = false
   targetCtx.beginPath();
   targetCtx.arc(0, 6, 13, 0.25, Math.PI - 0.25);
   targetCtx.stroke();
-  targetCtx.strokeStyle = "#fff59e";
-  targetCtx.lineWidth = 1;
-  targetCtx.setLineDash([2, 3]);
-  targetCtx.beginPath();
-  targetCtx.arc(0, 6, 13, 0.25, Math.PI - 0.25);
-  targetCtx.stroke();
-  targetCtx.setLineDash([]);
   targetCtx.fillStyle = "#ffbe2e";
   targetCtx.strokeStyle = "#8c5900";
   targetCtx.lineWidth = 1.5;
@@ -1912,9 +1744,6 @@ function drawProceduralFace(actx, sColors, timeVal) {
   actx.beginPath();
   actx.ellipse(0, 8 + tongueExt * 0.5, 2.2, 3 + tongueExt * 0.5, 0, 0, Math.PI * 2);
   actx.fill();
-  actx.strokeStyle = "#8b004f";
-  actx.lineWidth = 0.8;
-  actx.stroke();
  }
 }
 
@@ -1994,17 +1823,17 @@ document.getElementById("best").textContent=best;
 
 const keys={};
 let rawTiltInput = 0;
-let smoothedTilt = 0; // Inclinación suavizada para fluidez perfecta
 let gyroEnabled = false;
 
 const rand=(a,b)=>Math.random()*(b-a)+a;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
-// --- CONTROL POR INCLINACIÓN SUAVIZADO (GIROSCOPIO) ---
+// --- CONTROL POR INCLINACIÓN (SÓLO MÓVIL) ---
 function handleOrientation(event) {
+ if (!isMobileDevice) return; // En PC se ignoran los eventos del giroscopio
  if (event.gamma === null || event.gamma === undefined) return;
- const deadzone = 2; // Zona muerta más pequeña para respuesta inmediata
- const maxTilt = 22; // Rango óptimo para inclinación natural en mano
+ const deadzone = 1.2; 
+ const maxTilt = 13;   
  let gamma = event.gamma;
 
  if (Math.abs(gamma) < deadzone) {
@@ -2016,7 +1845,7 @@ function handleOrientation(event) {
 }
 
 function requestMotionPermission() {
- if (gyroEnabled) return;
+ if (!isMobileDevice || gyroEnabled) return;
  if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
   DeviceOrientationEvent.requestPermission()
    .then(response => {
@@ -2033,11 +1862,11 @@ function requestMotionPermission() {
 }
 
 window.addEventListener("keydown",e=>{
- if(["ArrowLeft","ArrowRight","ArrowUp"," "].includes(e.key))e.preventDefault();
+ if(["arrowleft","arrowright","arrowup"," "].includes(e.key.toLowerCase()))e.preventDefault();
  keys[e.key.toLowerCase()]=true;
  if(e.key==="Escape"&&running&&!isDead)togglePause();
 
- if((e.key===" " || e.key==="ArrowUp" || e.key==="w") && waitingForFirstJump && running && !isDead) {
+ if((e.key===" " || e.key==="arrowup" || e.key==="w") && waitingForFirstJump && running && !isDead) {
   triggerFirstJump();
  }
 });
@@ -2079,7 +1908,7 @@ function triggerFirstJump(){
  waitingForFirstJump = false;
  player.vy = -16;
  playWingsSound();
- burst(player.x, player.y + 18, "#75ff9b", 12);
+ burst(player.x, player.y + 18, "#75ff9b", 10);
 }
 
 function updateLivesHUD(){
@@ -2119,7 +1948,6 @@ function goToShopScreen() {
  cancelAnimationFrame(avatarAnimId);
  document.getElementById("gameOverOverlay").classList.add("hidden");
 
- // Detener y limpiar otras músicas para evitar encimar
  bgMusic.pause();
  bgMusic.currentTime = 0;
  deadMusic.pause();
@@ -2156,7 +1984,6 @@ function startReadyGame() {
  requestMotionPermission();
  cancelAnimationFrame(avatarAnimId);
  
- // Detener por completo la música de intro y muerte para que no se encima con la del juego
  introMusic.pause();
  introMusic.currentTime = 0;
  deadMusic.pause();
@@ -2182,10 +2009,8 @@ function startGameDirect(){
  isDead=false;
  waitingForFirstJump=true;
  lastPowerHUDHash = "";
- smoothedTilt = 0; // Reiniciar inclinación
  document.getElementById("gameOverOverlay").classList.add("hidden");
  document.getElementById("powerContainer").innerHTML = "";
- canvas.style.filter = "none";
 
  player={
   x:225,y:720 - 19,vx:0,vy:0,
@@ -2204,7 +2029,7 @@ function startGameDirect(){
 
  running=true;
  paused=false;
- loop();
+ animationId = requestAnimationFrame(loop);
 }
 
 function generatePlatform(y){
@@ -2268,7 +2093,7 @@ function generatePlatform(y){
  }
 }
 
-const MAX_PARTICLES = 95;
+const MAX_PARTICLES = 60;
 function burst(x,y,color,count,power=1){
  const allowed = Math.min(count, MAX_PARTICLES - particles.length);
  for(let i=0;i<allowed;i++){
@@ -2276,9 +2101,9 @@ function burst(x,y,color,count,power=1){
    x,y,
    vx:rand(-5,5)*power,
    vy:rand(-5,4)*power,
-   life:rand(18,38),
-   max:38,
-   size:rand(2,6),
+   life:rand(16,32),
+   max:32,
+   size:rand(2,5),
    color,
    type:Math.random()<.3?"smoke":"spark"
   });
@@ -2291,7 +2116,7 @@ function hasPower(type) {
 
 function activatePower(type){
  shake=4;
- flash=.55;
+ flash=.5;
 
  const durations = {
   lean: 600,
@@ -2320,20 +2145,20 @@ function activatePower(type){
  if(type==="lean"){
   playLeanSound();
   timeScale = 0.5;
-  burst(player.x,player.y,"#c34bff",28,1.5);
+  burst(player.x,player.y,"#c34bff",18,1.5);
  } else if(type==="blunt"){
   playSmokeInhaleSound();
-  burst(player.x,player.y,"#5bff9b",28,1.7);
+  burst(player.x,player.y,"#5bff9b",18,1.7);
  } else if(type==="beer"){
   playBurpSound();
-  burst(player.x,player.y,"#ffbe2e",28,1.6);
+  burst(player.x,player.y,"#ffbe2e",18,1.6);
  } else if(type==="wings"){
   playWingsSound();
   player.vy=-16;
-  burst(player.x,player.y,"#a5eaff",22);
+  burst(player.x,player.y,"#a5eaff",16);
  } else if(type==="shield"){
   playShieldSound();
-  burst(player.x,player.y,"#ffe45c",22);
+  burst(player.x,player.y,"#ffe45c",16);
  }
 }
 
@@ -2344,7 +2169,6 @@ function triggerDeathSequence(){
  player.invuln = 999;
  shake = 15;
  flash = 0.8;
- canvas.style.filter = "none";
  
  bgMusic.pause();
  introMusic.pause();
@@ -2355,12 +2179,12 @@ function triggerDeathSequence(){
  localStorage.setItem("frogMoney", playerMoney);
 }
 
-function update(){
+function update(stepRatio = 1){
  if(!running||paused)return;
 
  if(isDead){
-  player.vy += 0.5;
-  player.y += player.vy;
+  player.vy += 0.5 * stepRatio;
+  player.y += player.vy * stepRatio;
   if(player.y > camera + H + 100){
    endGame();
   }
@@ -2369,7 +2193,7 @@ function update(){
 
  realFrame++;
 
- player.activePowers.forEach(p => p.time -= 1);
+ player.activePowers.forEach(p => p.time -= stepRatio);
  let expiredPowers = player.activePowers.filter(p => p.time <= 0);
  player.activePowers = player.activePowers.filter(p => p.time > 0);
 
@@ -2385,14 +2209,14 @@ function update(){
 
  timeScale = hasLean ? 0.5 : 1;
 
- const dt=timeScale;
- frame+=dt;
- difficulty=1+highest/1800;
+ const dt = timeScale * stepRatio;
+ frame += dt;
+ difficulty = 1 + highest / 1800;
 
- if(player.invuln > 0) player.invuln -= 1;
+ if(player.invuln > 0) player.invuln -= stepRatio;
 
  if(particles.length < MAX_PARTICLES){
-  if(hasWings && Math.random() < 0.45) {
+  if(hasWings && Math.random() < 0.35) {
    particles.push({
     x: player.x + rand(-30, 30),
     y: player.y + rand(-25, 25),
@@ -2407,28 +2231,28 @@ function update(){
   }
 
   if(hasBlunt){
-   if(Math.random()<.28){
+   if(Math.random()<.2){
     particles.push({
      x:player.x+rand(-20,20),
      y:player.y+rand(-15,15),
      vx:rand(-1.5,1.5),
      vy:rand(-3,-1),
-     life:rand(30,50),
-     max:50,
-     size:rand(7,12),
+     life:rand(26,42),
+     max:42,
+     size:rand(7,11),
      color:"#58ff65",
      type:"leaf",
      rotation:rand(0,Math.PI*2)
     });
    }
-   if(Math.random()<.42){
+   if(Math.random()<.3){
     particles.push({
      x:player.x + 15 + rand(-3,3),
      y:player.y + 3 + rand(-3,3),
      vx:rand(0.4, 1.8),
      vy:rand(-2.5, -1.0),
-     life:rand(22,40),
-     max:40,
+     life:rand(20,35),
+     max:35,
      size:rand(4,7),
      color:"#e4fff0",
      type:"smoke"
@@ -2436,14 +2260,14 @@ function update(){
    }
   }
 
-  if(hasBeer && Math.random()<.35){
+  if(hasBeer && Math.random()<.28){
    particles.push({
     x:player.x+rand(-18,18),
     y:player.y+rand(-10,15),
     vx:rand(-1,1),
     vy:rand(-3.5,-1.5),
-    life:rand(22,42),
-    max:42,
+    life:rand(20,36),
+    max:36,
     size:rand(3,6),
     color:"#ffd447",
     type:"bubble"
@@ -2451,43 +2275,24 @@ function update(){
   }
  }
 
- let acceleration=.8*dt;
+ let acceleration = 0.95 * dt;
 
- // Movimiento por teclado o respaldo táctil
- if(keys["arrowleft"]||keys["a"]||keys["touchleft"]) player.vx-=acceleration;
- if(keys["arrowright"]||keys["d"]||keys["touchright"]) player.vx+=acceleration;
+ // Movimiento por teclado (PC)
+ if(keys["arrowleft"]||keys["a"]||keys["touchleft"]) player.vx -= acceleration;
+ if(keys["arrowright"]||keys["d"]||keys["touchright"]) player.vx += acceleration;
 
- // --- GIROSCOPIO FLUIDO Y NATURAL (Suavizado tipo Lerp) ---
- smoothedTilt += (rawTiltInput - smoothedTilt) * 0.22; // 0.22 da una fluidez perfecta y realista
- if (Math.abs(smoothedTilt) > 0) {
-  player.vx += smoothedTilt * acceleration * 1.6;
+ // Giroscopio ultra sensible (Sólo móvil)
+ if (isMobileDevice && Math.abs(rawTiltInput) > 0) {
+  player.vx += rawTiltInput * acceleration * 2.3;
  }
 
  if(hasBeer){
   player.vx += Math.sin(frame * 0.14) * 0.45 * dt;
-  if(realFrame % 3 === 0){
-   const blurAmount = (1.1 + Math.abs(Math.sin(frame * 0.08)) * 1.4).toFixed(2);
-   const hueAmount = Math.round(Math.sin(frame * 0.06) * 16);
-   canvas.style.filter = `blur(${blurAmount}px) saturate(1.3) hue-rotate(${hueAmount}deg)`;
-  }
- } else if(hasBlunt){
-  if(realFrame % 3 === 0){
-   const huePsy = Math.round((frame * 4) % 360);
-   const saturatePsy = (1.8 + Math.sin(frame * 0.15) * 0.4).toFixed(2);
-   canvas.style.filter = `hue-rotate(${huePsy}deg) saturate(${saturatePsy}) contrast(1.2)`;
-  }
- } else if(hasLean){
-  if(realFrame % 3 === 0){
-   const brightness = (1.2 + Math.sin(frame * 0.1) * 0.18).toFixed(2);
-   canvas.style.filter = `brightness(${brightness}) saturate(1.65)`;
-  }
- } else if(canvas.style.filter !== "none") {
-  canvas.style.filter = "none";
  }
 
- player.vx*=Math.pow(.88,dt);
- player.vx=clamp(player.vx,-7.5,7.5);
- player.x+=player.vx*dt;
+ player.vx *= Math.pow(0.86, dt);
+ player.vx = clamp(player.vx, -10.5, 10.5);
+ player.x += player.vx * dt;
 
  if(player.x<-20)player.x=W+20;
  if(player.x>W+20)player.x=-20;
@@ -2518,10 +2323,10 @@ function update(){
      player.y=p.y-player.height/2;
      if(hasBlunt){
       player.vy = -17.7;
-      burst(player.x,player.y+18,"#5bff9b",10,1.3);
+      burst(player.x,player.y+18,"#5bff9b",8,1.3);
      } else {
       player.vy = -12.5;
-      burst(player.x,player.y+18,"#75ff9b",6);
+      burst(player.x,player.y+18,"#75ff9b",5);
      }
     }
    }
@@ -2547,7 +2352,7 @@ function update(){
   if(d<h.r+17){
    if(hasShield){
     playHitSound();
-    burst(h.x,h.y,"#ffe45c",18);
+    burst(h.x,h.y,"#ffe45c",14);
     h.y=-9999;
     player.activePowers = player.activePowers.filter(p => p.type !== "shield");
     shake=12;
@@ -2555,7 +2360,7 @@ function update(){
     playHitSound();
     player.lives--;
     updateLivesHUD();
-    burst(player.x,player.y,"#ff3b5c",24);
+    burst(player.x,player.y,"#ff3b5c",18);
     h.y=-9999;
 
     if(player.lives<=0){
@@ -2623,8 +2428,8 @@ function update(){
   if (p.life <= 0) particles.splice(i, 1);
  }
 
- shake*=.88;
- flash*=.9;
+ shake *= Math.pow(0.88, stepRatio);
+ flash *= Math.pow(0.9, stepRatio);
 
  const powerContainer = document.getElementById("powerContainer");
  const currentTypesHash = player.activePowers.map(p => p.type).join(",");
@@ -2655,7 +2460,7 @@ function update(){
   }
  }
 
- if (player.activePowers.length > 0) {
+ if (player.activePowers.length > 0 && realFrame % 2 === 0) {
   const powerNames = {
    lean: "🥤 LEAN",
    blunt: "🚬 WEED",
@@ -2939,7 +2744,6 @@ function animateCustomSkull(){
 
 function endGame(){
  running=false;
- canvas.style.filter = "none";
  if(highest>best){
   best=highest;
   localStorage.setItem("frogBest",best);
@@ -2970,7 +2774,7 @@ function togglePause(){
  document.getElementById("pauseScreen").classList.toggle("hidden",!paused);
  if(!paused&&running){
   lastTime=0;
-  loop();
+  animationId = requestAnimationFrame(loop);
  }
 }
 
@@ -3070,7 +2874,7 @@ function drawBackground(){
  }
 
  ctx.fillStyle = isLean ? "#e0bfff" : "rgba(255,255,255,0.92)";
- for(let i=0;i<7;i++){
+ for(let i=0;i<5;i++){
   let x=(i*115+Math.sin(frame*.012+i)*25)%W;
   let y=((i*145+camera*.2)%H+H)%H;
   drawCloud(x,y,35);
@@ -3080,10 +2884,10 @@ function drawBackground(){
   ctx.save();
   ctx.strokeStyle = "rgba(100, 255, 120, 0.35)";
   ctx.lineWidth = 3;
-  for(let wLine = 0; wLine < 4; wLine++){
+  for(let wLine = 0; wLine < 3; wLine++){
    ctx.beginPath();
-   for(let xCoord = 0; xCoord < W; xCoord += 25){
-    let wy = (wLine * 180 + Math.sin(xCoord * 0.02 + frame * 0.08 + wLine) * 45 + camera * 0.5) % H;
+   for(let xCoord = 0; xCoord < W; xCoord += 45){
+    let wy = (wLine * 220 + Math.sin(xCoord * 0.02 + frame * 0.08 + wLine) * 45 + camera * 0.5) % H;
     if(xCoord === 0) ctx.moveTo(xCoord, wy);
     else ctx.lineTo(xCoord, wy);
    }
@@ -3109,15 +2913,6 @@ function drawPlatform(p){
   ctx.fillStyle = "#0f2018";
   ctx.fillRect(p.x, y + 26, p.w, H * 2);
 
-  ctx.strokeStyle = "#163827";
-  ctx.lineWidth = 3;
-  for(let i = 40; i < H * 1.5; i += 35) {
-   ctx.beginPath();
-   ctx.moveTo(p.x + 30, y + i);
-   ctx.lineTo(p.x + p.w - 30, y + i);
-   ctx.stroke();
-  }
-
   ctx.fillStyle = "#1e3d2f";
   ctx.fillRect(p.x, y - 10, p.w, p.h + 36);
 
@@ -3132,9 +2927,6 @@ function drawPlatform(p){
   return;
  }
 
- ctx.fillStyle = p.type==="moving" ? "rgba(255,53,237,0.25)" : "rgba(77,255,173,0.25)";
- ctx.fillRect(p.x - 3, y - 3, p.w + 6, p.h + 6);
-
  ctx.fillStyle = p.type==="moving" ? "#d02dff" : "#48ff9b";
  ctx.fillRect(p.x, y, p.w, p.h);
 
@@ -3143,9 +2935,6 @@ function drawPlatform(p){
 
  ctx.fillStyle = "#116b76";
  ctx.fillRect(p.x, y + p.h - 4, p.w, 4);
-
- ctx.fillStyle="#fff";
- ctx.fillRect(p.x+3,y+2,p.w-6,2);
 
  ctx.strokeStyle="#caffff";
  ctx.lineWidth=1;
@@ -3160,8 +2949,8 @@ function drawSaw(h){
  ctx.translate(h.x,y);
  ctx.rotate(h.angle);
 
- for(let i=0;i<12;i++){
-  ctx.rotate(Math.PI/6);
+ for(let i=0;i<8;i++){
+  ctx.rotate(Math.PI/4);
   ctx.fillStyle=i%2?(h.moving?"#ffb9c4":"#ffe0b2"):"#e5faff";
   ctx.strokeStyle=h.moving?"#ff334d":"#ff5500";
   ctx.lineWidth=2;
@@ -3180,11 +2969,11 @@ function drawSaw(h){
  ctx.fillStyle=h.moving?"#778ba8":"#554433";
  ctx.fill();
  ctx.strokeStyle="white";
- ctx.lineWidth=3;
+ ctx.lineWidth=2.5;
  ctx.stroke();
 
  ctx.beginPath();
- ctx.arc(0,0,7,0,Math.PI*2);
+ ctx.arc(0,0,6,0,Math.PI*2);
  ctx.fillStyle="#171126";
  ctx.fill();
  ctx.restore();
@@ -3197,7 +2986,7 @@ function drawLean(x,y){
 
  ctx.fillStyle="#a83cff33";
  ctx.beginPath();
- ctx.arc(0,0,34,0,Math.PI*2);
+ ctx.arc(0,0,30,0,Math.PI*2);
  ctx.fill();
 
  ctx.fillStyle="rgba(215, 140, 255, 0.35)";
@@ -3221,29 +3010,11 @@ function drawLean(x,y){
  ctx.closePath();
  ctx.fill();
 
- ctx.fillStyle="rgba(255,255,255,0.75)";
- ctx.strokeStyle="#ffffff";
- ctx.lineWidth=1;
- ctx.beginPath();
- ctx.rect(-6, 2, 8, 8);
- ctx.fill();
- ctx.stroke();
-
  ctx.fillStyle="#ffffff";
  ctx.fillRect(-18,-21,36,5);
- ctx.fillStyle="#e0e0e0";
- ctx.fillRect(-15,-21,30,2);
 
  ctx.strokeStyle="#ff55e3";
  ctx.lineWidth=4;
- ctx.beginPath();
- ctx.moveTo(4,-19);
- ctx.lineTo(8,-36);
- ctx.lineTo(16,-38);
- ctx.stroke();
-
- ctx.strokeStyle="#ffffff";
- ctx.lineWidth=1.5;
  ctx.beginPath();
  ctx.moveTo(4,-19);
  ctx.lineTo(8,-36);
@@ -3265,7 +3036,7 @@ function drawBeer(x,y){
 
  ctx.fillStyle="#ffae0033";
  ctx.beginPath();
- ctx.arc(0,0,32,0,Math.PI*2);
+ ctx.arc(0,0,30,0,Math.PI*2);
  ctx.fill();
 
  ctx.strokeStyle="#e6f7ff";
@@ -3282,21 +3053,12 @@ function drawBeer(x,y){
  ctx.fill();
  ctx.stroke();
 
- ctx.fillStyle = "rgba(255,255,255,0.6)";
- ctx.beginPath();
- ctx.arc(-5, 6, 2, 0, Math.PI*2);
- ctx.arc(4, 0, 1.5, 0, Math.PI*2);
- ctx.arc(0, 11, 2, 0, Math.PI*2);
- ctx.fill();
-
  ctx.fillStyle = "#ffffff";
  ctx.beginPath();
  ctx.arc(-9, -13, 6, 0, Math.PI*2);
  ctx.arc(0, -15, 7, 0, Math.PI*2);
  ctx.arc(9, -13, 6, 0, Math.PI*2);
  ctx.fill();
-
- ctx.fillRect(-11, -13, 4, 9);
  ctx.restore();
 }
 
@@ -3307,7 +3069,7 @@ function drawBlunt(x,y){
 
  ctx.fillStyle="#45ff9b33";
  ctx.beginPath();
- ctx.arc(0,0,31,0,Math.PI*2);
+ ctx.arc(0,0,30,0,Math.PI*2);
  ctx.fill();
 
  ctx.fillStyle="#e8d0a3";
@@ -3325,36 +3087,12 @@ function drawBlunt(x,y){
 
  ctx.fillStyle="#d58d54";
  ctx.fillRect(-25,-5,9,10);
- ctx.strokeStyle="#9b542e";
- ctx.beginPath();
- ctx.moveTo(-22,-4);
- ctx.lineTo(-22,4);
- ctx.stroke();
 
  ctx.fillStyle="#ff5b13";
  ctx.beginPath();
  ctx.arc(20,0,4,0,Math.PI*2);
  ctx.fill();
 
- ctx.fillStyle="#fff69a";
- ctx.beginPath();
- ctx.arc(20,0,2,0,Math.PI*2);
- ctx.fill();
-
- for(let i=0;i<2;i++){
-  let offset=(frame*.7+i*17)%35;
-  let sx=19+Math.sin(frame*.05+i)*5;
-  let sy=-10-offset;
-
-  ctx.globalAlpha=1-offset/40;
-  ctx.strokeStyle="#b5ffcb";
-  ctx.lineWidth=2;
-  ctx.beginPath();
-  ctx.moveTo(sx,sy+8);
-  ctx.quadraticCurveTo(sx-8,sy,sx+3,sy-9);
-  ctx.stroke();
- }
- ctx.globalAlpha=1;
  ctx.restore();
 }
 
@@ -3362,51 +3100,12 @@ function drawWeedLeaf(x,y,size,rotation){
  ctx.save();
  ctx.translate(x,y);
  ctx.rotate(rotation);
-
  ctx.fillStyle="#55ed61";
- ctx.strokeStyle="#b0ff91";
- ctx.lineWidth=1;
-
  ctx.beginPath();
  ctx.moveTo(0,size);
- ctx.lineTo(0,-size*.85);
- ctx.stroke();
-
- ctx.beginPath();
- ctx.moveTo(0,size*.2);
- ctx.quadraticCurveTo(-size*.35,-size*.3,0,-size*1.25);
- ctx.quadraticCurveTo(size*.35,-size*.3,0,size*.2);
+ ctx.quadraticCurveTo(-size*.4,-size*.3,0,-size*1.2);
+ ctx.quadraticCurveTo(size*.4,-size*.3,0,size);
  ctx.fill();
- ctx.stroke();
-
- const leaves=[
-  [-.25,-.25,-1],
-  [.25,-.25,1],
-  [-.55,.1,-1],
-  [.55,.1,1],
-  [-.8,.45,-1],
-  [.8,.45,1]
- ];
-
- leaves.forEach(([px,py,side])=>{
-  ctx.beginPath();
-  ctx.moveTo(0,size*py);
-  ctx.quadraticCurveTo(
-   size*side*.65,
-   size*py-size*.2,
-   size*side,
-   size*py-size*.65
-  );
-  ctx.quadraticCurveTo(
-   size*side*.35,
-   size*py+size+.1,
-   0,
-   size*py
-  );
-  ctx.fill();
-  ctx.stroke();
- });
-
  ctx.restore();
 }
 
@@ -3424,9 +3123,6 @@ function drawCap(targetCtx = ctx){
  targetCtx.fill();
  targetCtx.stroke();
 
- targetCtx.fillStyle="#22202c";
- targetCtx.fillRect(-11,-34,22,12);
-
  targetCtx.fillStyle="#71ff91";
  targetCtx.font="bold 9px Arial";
  targetCtx.textAlign="center";
@@ -3442,13 +3138,6 @@ function drawCap(targetCtx = ctx){
  targetCtx.lineTo(-17,-15);
  targetCtx.closePath();
  targetCtx.fill();
- targetCtx.stroke();
-
- targetCtx.strokeStyle="#6aff91";
- targetCtx.lineWidth=1.5;
- targetCtx.beginPath();
- targetCtx.moveTo(-13,-17);
- targetCtx.lineTo(20,-17);
  targetCtx.stroke();
 }
 
@@ -3471,14 +3160,6 @@ function drawSymmetricWings(sideMultiplier){
  ctx.fill();
  ctx.stroke();
 
- ctx.beginPath();
- ctx.moveTo(sideMultiplier * 10, -4);
- ctx.quadraticCurveTo(sideMultiplier * 32, -30, sideMultiplier * 42, -22);
- ctx.quadraticCurveTo(sideMultiplier * 26, -2, sideMultiplier * 8, 2);
- ctx.closePath();
- ctx.fill();
- ctx.stroke();
-
  ctx.restore();
 }
 
@@ -3486,19 +3167,14 @@ function drawOtherPower(x,y,type){
  ctx.save();
  ctx.translate(x,y);
 
- ctx.fillStyle=type==="wings"?"rgba(125,234,255,0.28)":"rgba(255,228,92,0.28)";
- ctx.beginPath();
- ctx.arc(0,0,25,0,Math.PI*2);
- ctx.fill();
-
  ctx.fillStyle=type==="wings"?"#a5eaff":"#ffe45c";
  ctx.beginPath();
  ctx.arc(0,0,19,0,Math.PI*2);
  ctx.fill();
 
- ctx.font="25px Arial";
+ ctx.font="24px Arial";
  ctx.textAlign="center";
- ctx.fillText(type==="wings"?"🪽":"🛡️",0,9);
+ ctx.fillText(type==="wings"?"🪽":"🛡️",0,8);
  ctx.restore();
 }
 
@@ -3519,7 +3195,7 @@ function drawSpiralEye(cx, cy){
  ctx.strokeStyle = "#8c00ff";
  ctx.lineWidth = 1.6;
  ctx.beginPath();
- for(let a = 0; a < Math.PI * 3.5; a += 0.45){
+ for(let a = 0; a < Math.PI * 3.5; a += 0.55){
   let r = a * 0.55;
   let px = Math.cos(a) * r;
   let py = Math.sin(a) * r;
@@ -3575,18 +3251,6 @@ function drawGameFrogFace(sColors){
  ctx.beginPath();
  ctx.arc(0,7,9,.15,Math.PI-.15);
  ctx.stroke();
-
- const tongueCycle = (frame * 0.02) % 6.0;
- if(tongueCycle < 1.0 && !isLean) {
-  const tongueExt = Math.sin(tongueCycle * Math.PI) * 7;
-  ctx.fillStyle = "#ff3385";
-  ctx.beginPath();
-  ctx.ellipse(0, 11 + tongueExt * 0.5, 2.5, 4 + tongueExt * 0.5, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "#8b004f";
-  ctx.lineWidth = 1;
-  ctx.stroke();
- }
 }
 
 function drawFrog(offsetX = 0, offsetY = 0, ghostAlpha = 1){
@@ -3607,51 +3271,29 @@ function drawFrog(offsetX = 0, offsetY = 0, ghostAlpha = 1){
   ctx.globalAlpha *= 0.4;
  }
 
- const breath = Math.sin(frame * 0.05) * 0.035;
- ctx.scale(1 + breath * 0.3, 1 + breath);
-
- let pulse=Math.sin(frame*.12)*3;
-
  if(hasPower("wings") && !isDead){
   drawSymmetricWings(-1);
   drawSymmetricWings(1);
  }
 
  if(hasPower("shield") && !isDead){
-  ctx.fillStyle="rgba(159, 250, 255, 0.14)";
-  ctx.beginPath();
-  ctx.arc(0,0,32+pulse,0,Math.PI*2);
-  ctx.fill();
-
   ctx.strokeStyle="#9ffaff";
   ctx.lineWidth=3;
   ctx.beginPath();
-  ctx.arc(0,0,32+pulse,0,Math.PI*2);
+  ctx.arc(0,0,32,0,Math.PI*2);
   ctx.stroke();
  }
 
  let isBlunt = hasPower("blunt");
  let isLean = hasPower("lean");
 
- ctx.fillStyle = isBlunt ? "rgba(91,255,155,0.2)" : (isLean ? "rgba(195,75,255,0.22)" : "rgba(255,255,255,0.14)");
- ctx.beginPath();
- ctx.arc(0, 2, 29, 0, Math.PI * 2);
- ctx.fill();
-
  drawCharacterBody(ctx, currentChar.id, sColors, false);
  drawGameFrogFace(sColors);
 
  if(isLean && !isDead){
   ctx.fillStyle = "#a81aff";
-  let droolCycle = (frame * 0.12) % (Math.PI * 2);
-  let droolLength = 6 + Math.sin(droolCycle) * 4;
-  ctx.beginPath();
-  ctx.moveTo(2, 11);
-  ctx.lineTo(5, 11 + droolLength);
-  ctx.arc(3.5, 11 + droolLength, 2.2, 0, Math.PI);
-  ctx.lineTo(2, 11);
-  ctx.closePath();
-  ctx.fill();
+  let droolLength = 6 + Math.sin(frame * 0.12) * 4;
+  ctx.fillRect(2, 11, 3, droolLength);
  }
 
  if(isBlunt && !isDead){
@@ -3666,18 +3308,6 @@ function drawFrog(offsetX = 0, offsetY = 0, ghostAlpha = 1){
   ctx.beginPath();
   ctx.arc(17, 0, 3, 0, Math.PI*2);
   ctx.fill();
-
-  for(let s = 0; s < 3; s++){
-   const smokeProg = ((frame * 0.04) + s * 0.33) % 1;
-   const sx = 18 + Math.sin(smokeProg * 6 + s) * 4;
-   const sy = -4 - smokeProg * 22;
-   ctx.strokeStyle = `rgba(220, 255, 235, ${(1 - smokeProg) * 0.85})`;
-   ctx.lineWidth = 2;
-   ctx.beginPath();
-   ctx.moveTo(sx, sy + 4);
-   ctx.quadraticCurveTo(sx - 4, sy, sx + 3, sy - 4);
-   ctx.stroke();
-  }
   ctx.restore();
  }
 
@@ -3729,10 +3359,7 @@ function draw(){
  let isBeer = hasPower("beer");
  if(isBeer && !isDead){
   const swayX = Math.sin(frame * 0.09) * 5;
-  const swayAngle = Math.sin(frame * 0.07) * 0.018;
-  ctx.translate(W/2 + swayX, H/2);
-  ctx.rotate(swayAngle);
-  ctx.translate(-W/2, -H/2);
+  ctx.translate(swayX, 0);
  }
 
  drawBackground();
@@ -3742,7 +3369,7 @@ function draw(){
  drawParticles();
 
  if(waitingForFirstJump) {
-  ctx.fillStyle = "rgba(8, 4, 20, 0.82)";
+  ctx.fillStyle = "rgba(8, 4, 20, 0.85)";
   ctx.fillRect(15, H / 2 - 42, W - 30, 84);
   
   ctx.strokeStyle = "#65ffae";
@@ -3753,9 +3380,9 @@ function draw(){
   ctx.fillStyle = "#65ffae";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText("¡TOCA LA PANTALLA O", W/2, H / 2 - 14);
+  ctx.fillText(isMobileDevice ? "¡TOCA LA PANTALLA O" : "¡USA LAS FLECHAS O A/D", W/2, H / 2 - 14);
   ctx.fillStyle = "#ff5de5";
-  ctx.fillText("ESPACIO PARA BRINCAR!", W/2, H / 2 + 14);
+  ctx.fillText(isMobileDevice ? "ESPACIO PARA BRINCAR!" : "Y ESPACIO PARA BRINCAR!", W/2, H / 2 + 14);
   ctx.textBaseline = "alphabetic";
  }
 
@@ -3769,7 +3396,11 @@ function draw(){
  }
  ctx.restore();
 
- if(isBeer && !isDead){
+ if(hasPower("blunt") && !isDead){
+  const hue = (frame * 4) % 360;
+  ctx.fillStyle = `hsla(${hue}, 90%, 50%, 0.12)`;
+  ctx.fillRect(0, 0, W, H);
+ } else if(isBeer && !isDead){
   ctx.fillStyle = "rgba(255, 190, 46, 0.14)";
   ctx.fillRect(0, 0, W, H);
  }
@@ -3785,9 +3416,12 @@ function draw(){
 function loop(timestamp){
  if(!running||paused)return;
  if(!lastTime)lastTime=timestamp;
- lastTime=timestamp;
+ const elapsedMs = timestamp - lastTime;
+ lastTime = timestamp;
 
- update();
+ const stepRatio = Math.min(elapsedMs / 16.667, 2.5) || 1;
+
+ update(stepRatio);
  draw();
 
  if(running&&!paused){
