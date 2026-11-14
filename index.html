@@ -1115,23 +1115,6 @@ const deadMusic = new Audio('dead.mp3');
 deadMusic.loop = false;
 deadMusic.volume = 0.6;
 
-function fadeOutAudio(audio, duration = 1000) {
- if(!audio || audio.paused) return;
- let stepTime = 50;
- let steps = duration / stepTime;
- let volStep = audio.volume / steps;
- let fadeInterval = setInterval(() => {
-  if (audio.volume > volStep) {
-   audio.volume -= volStep;
-  } else {
-   audio.pause();
-   audio.currentTime = 0;
-   audio.volume = 0.5;
-   clearInterval(fadeInterval);
-  }
- }, stepTime);
-}
-
 function createNoiseBuffer(duration) {
  const bufferSize = Math.floor(audioCtx.sampleRate * duration);
  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
@@ -2010,32 +1993,31 @@ let lastPowerHUDHash = "";
 document.getElementById("best").textContent=best;
 
 const keys={};
-let tiltInput = 0; // Valor normalizado (-1 a 1) de inclinación del celular
+let rawTiltInput = 0;
+let smoothedTilt = 0; // Inclinación suavizada para fluidez perfecta
 let gyroEnabled = false;
 
 const rand=(a,b)=>Math.random()*(b-a)+a;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
-// --- CONTROL POR INCLINACIÓN DEL CELULAR (GIROSCOPIO / ACELERÓMETRO) ---
+// --- CONTROL POR INCLINACIÓN SUAVIZADO (GIROSCOPIO) ---
 function handleOrientation(event) {
  if (event.gamma === null || event.gamma === undefined) return;
- // gamma mide la inclinación de izquierda a derecha (-90 a 90 grados)
- const deadzone = 3; // Grados de tolerancia para mantenerlo recto
- const maxTilt = 26; // Grados para alcanzar velocidad máxima
+ const deadzone = 2; // Zona muerta más pequeña para respuesta inmediata
+ const maxTilt = 22; // Rango óptimo para inclinación natural en mano
  let gamma = event.gamma;
 
  if (Math.abs(gamma) < deadzone) {
-  tiltInput = 0;
+  rawTiltInput = 0;
  } else {
   const adjusted = gamma > 0 ? gamma - deadzone : gamma + deadzone;
-  tiltInput = clamp(adjusted / (maxTilt - deadzone), -1, 1);
+  rawTiltInput = clamp(adjusted / (maxTilt - deadzone), -1, 1);
  }
 }
 
 function requestMotionPermission() {
  if (gyroEnabled) return;
  if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
-  // iOS 13+ requiere permiso explícito desde un evento táctil/clic
   DeviceOrientationEvent.requestPermission()
    .then(response => {
     if (response === "granted") {
@@ -2045,7 +2027,6 @@ function requestMotionPermission() {
    })
    .catch(err => console.warn("Permiso de giroscopio denegado:", err));
  } else if (typeof DeviceOrientationEvent !== "undefined") {
-  // Android y otros navegadores
   window.addEventListener("deviceorientation", handleOrientation);
   gyroEnabled = true;
  }
@@ -2062,7 +2043,6 @@ window.addEventListener("keydown",e=>{
 });
 window.addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
 
-// Toque en pantalla: primer salto y respaldo táctil izquierda/derecha si no hay giroscopio
 canvas.addEventListener("touchstart", (e) => {
  unlockAudioContext();
  requestMotionPermission();
@@ -2139,6 +2119,11 @@ function goToShopScreen() {
  cancelAnimationFrame(avatarAnimId);
  document.getElementById("gameOverOverlay").classList.add("hidden");
 
+ // Detener y limpiar otras músicas para evitar encimar
+ bgMusic.pause();
+ bgMusic.currentTime = 0;
+ deadMusic.pause();
+ deadMusic.currentTime = 0;
  introMusic.currentTime = 0;
  introMusic.play().catch(e => {});
 
@@ -2151,8 +2136,11 @@ function goToShopScreen() {
 function goToShopScreenFromDeath() {
  cancelAnimationFrame(skullAnimId);
  cancelAnimationFrame(avatarAnimId);
+ 
  deadMusic.pause();
  deadMusic.currentTime = 0;
+ bgMusic.pause();
+ bgMusic.currentTime = 0;
 
  document.getElementById("gameOverOverlay").classList.add("hidden");
  document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
@@ -2167,7 +2155,13 @@ function startReadyGame() {
  unlockAudioContext();
  requestMotionPermission();
  cancelAnimationFrame(avatarAnimId);
- fadeOutAudio(introMusic, 600);
+ 
+ // Detener por completo la música de intro y muerte para que no se encima con la del juego
+ introMusic.pause();
+ introMusic.currentTime = 0;
+ deadMusic.pause();
+ deadMusic.currentTime = 0;
+
  bgMusic.currentTime = 0;
  bgMusic.play().catch(e => {});
 
@@ -2188,12 +2182,10 @@ function startGameDirect(){
  isDead=false;
  waitingForFirstJump=true;
  lastPowerHUDHash = "";
+ smoothedTilt = 0; // Reiniciar inclinación
  document.getElementById("gameOverOverlay").classList.add("hidden");
  document.getElementById("powerContainer").innerHTML = "";
  canvas.style.filter = "none";
-
- deadMusic.pause();
- deadMusic.currentTime = 0;
 
  player={
   x:225,y:720 - 19,vx:0,vy:0,
@@ -2465,9 +2457,10 @@ function update(){
  if(keys["arrowleft"]||keys["a"]||keys["touchleft"]) player.vx-=acceleration;
  if(keys["arrowright"]||keys["d"]||keys["touchright"]) player.vx+=acceleration;
 
- // Movimiento por inclinación del celular (Giroscopio)
- if (Math.abs(tiltInput) > 0) {
-  player.vx += tiltInput * acceleration * 1.45;
+ // --- GIROSCOPIO FLUIDO Y NATURAL (Suavizado tipo Lerp) ---
+ smoothedTilt += (rawTiltInput - smoothedTilt) * 0.22; // 0.22 da una fluidez perfecta y realista
+ if (Math.abs(smoothedTilt) > 0) {
+  player.vx += smoothedTilt * acceleration * 1.6;
  }
 
  if(hasBeer){
