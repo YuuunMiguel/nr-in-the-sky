@@ -95,46 +95,6 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
  box-shadow: 0 0 18px rgba(255, 0, 206, 0.8);
 }
 
-/* CONTROLES TÁCTILES MÓVILES OPTIMIZADOS */
-#mobileControls {
- position: absolute;
- bottom: 15px;
- left: 15px;
- right: 15px;
- display: flex;
- justify-content: space-between;
- z-index: 4;
- pointer-events: none;
- padding: 0 10px;
-}
-.mob-btn {
- pointer-events: auto;
- width: 75px;
- height: 75px;
- background: rgba(23, 8, 44, 0.75);
- backdrop-filter: blur(4px);
- border: 2px solid #65ffae;
- border-radius: 50%;
- color: #65ffae;
- font-family: 'Press Start 2P';
- font-size: 22px;
- display: flex;
- align-items: center;
- justify-content: center;
- box-shadow: 0 0 15px rgba(101, 255, 174, 0.4);
- user-select: none;
- -webkit-user-select: none;
- cursor: pointer;
- transition: transform 0.1s, background 0.1s;
-}
-.mob-btn:active {
- background: rgba(255, 0, 206, 0.85);
- border-color: white;
- color: white;
- transform: scale(0.90);
- box-shadow: 0 0 20px rgba(255, 0, 206, 0.8);
-}
-
 .screen{
  position:absolute;inset:0;z-index:5;
  display:flex;flex-direction:column;
@@ -396,12 +356,6 @@ canvas{width:100%;height:100%;display:block;will-change:filter}
 <div id="bottomControls">
  <button id="muteBtn" class="ctrl-btn" onclick="toggleMute()">🔊</button>
  <button id="pauseBtn" class="ctrl-btn" onclick="togglePause()">Ⅱ</button>
-</div>
-
-<!-- Controles táctiles en pantalla para móviles -->
-<div id="mobileControls">
- <div class="mob-btn" id="btnLeft">◀</div>
- <div class="mob-btn" id="btnRight">▶</div>
 </div>
 
 <!-- Pantalla 1: Inicio -->
@@ -1149,7 +1103,6 @@ function toggleMute() {
  }
 }
 
-// CORREGIDO: Archivos reales .mp3
 const introMusic = new Audio('intro.mp3');
 introMusic.loop = true;
 introMusic.volume = 0.5;
@@ -2057,8 +2010,46 @@ let lastPowerHUDHash = "";
 document.getElementById("best").textContent=best;
 
 const keys={};
+let tiltInput = 0; // Valor normalizado (-1 a 1) de inclinación del celular
+let gyroEnabled = false;
+
 const rand=(a,b)=>Math.random()*(b-a)+a;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+// --- CONTROL POR INCLINACIÓN DEL CELULAR (GIROSCOPIO / ACELERÓMETRO) ---
+function handleOrientation(event) {
+ if (event.gamma === null || event.gamma === undefined) return;
+ // gamma mide la inclinación de izquierda a derecha (-90 a 90 grados)
+ const deadzone = 3; // Grados de tolerancia para mantenerlo recto
+ const maxTilt = 26; // Grados para alcanzar velocidad máxima
+ let gamma = event.gamma;
+
+ if (Math.abs(gamma) < deadzone) {
+  tiltInput = 0;
+ } else {
+  const adjusted = gamma > 0 ? gamma - deadzone : gamma + deadzone;
+  tiltInput = clamp(adjusted / (maxTilt - deadzone), -1, 1);
+ }
+}
+
+function requestMotionPermission() {
+ if (gyroEnabled) return;
+ if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
+  // iOS 13+ requiere permiso explícito desde un evento táctil/clic
+  DeviceOrientationEvent.requestPermission()
+   .then(response => {
+    if (response === "granted") {
+     window.addEventListener("deviceorientation", handleOrientation);
+     gyroEnabled = true;
+    }
+   })
+   .catch(err => console.warn("Permiso de giroscopio denegado:", err));
+ } else if (typeof DeviceOrientationEvent !== "undefined") {
+  // Android y otros navegadores
+  window.addEventListener("deviceorientation", handleOrientation);
+  gyroEnabled = true;
+ }
+}
 
 window.addEventListener("keydown",e=>{
  if(["ArrowLeft","ArrowRight","ArrowUp"," "].includes(e.key))e.preventDefault();
@@ -2071,30 +2062,37 @@ window.addEventListener("keydown",e=>{
 });
 window.addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
 
+// Toque en pantalla: primer salto y respaldo táctil izquierda/derecha si no hay giroscopio
+canvas.addEventListener("touchstart", (e) => {
+ unlockAudioContext();
+ requestMotionPermission();
+ if(waitingForFirstJump && running && !isDead) {
+  triggerFirstJump();
+  return;
+ }
+ if (e.touches.length > 0) {
+  const rect = canvas.getBoundingClientRect();
+  const touchX = e.touches[0].clientX - rect.left;
+  if (touchX < rect.width / 2) {
+   keys["touchleft"] = true;
+   keys["touchright"] = false;
+  } else {
+   keys["touchright"] = true;
+   keys["touchleft"] = false;
+  }
+ }
+}, { passive: true });
+
+canvas.addEventListener("touchend", () => {
+ keys["touchleft"] = false;
+ keys["touchright"] = false;
+});
+
 canvas.addEventListener("click", () => {
+ requestMotionPermission();
  if(waitingForFirstJump && running && !isDead) {
   triggerFirstJump();
  }
-});
-
-// --- CONFIGURACIÓN DE CONTROLES TÁCTILES MÓVILES ---
-window.addEventListener("DOMContentLoaded", () => {
- const btnLeft = document.getElementById("btnLeft");
- const btnRight = document.getElementById("btnRight");
-
- if (!btnLeft || !btnRight) return;
-
- btnLeft.addEventListener("touchstart", (e) => { e.preventDefault(); keys["arrowleft"] = true; unlockAudioContext(); });
- btnLeft.addEventListener("touchend", (e) => { e.preventDefault(); keys["arrowleft"] = false; });
- btnLeft.addEventListener("mousedown", () => { keys["arrowleft"] = true; });
- btnLeft.addEventListener("mouseup", () => { keys["arrowleft"] = false; });
- btnLeft.addEventListener("mouseleave", () => { keys["arrowleft"] = false; });
-
- btnRight.addEventListener("touchstart", (e) => { e.preventDefault(); keys["arrowright"] = true; unlockAudioContext(); });
- btnRight.addEventListener("touchend", (e) => { e.preventDefault(); keys["arrowright"] = false; });
- btnRight.addEventListener("mousedown", () => { keys["arrowright"] = true; });
- btnRight.addEventListener("mouseup", () => { keys["arrowright"] = false; });
- btnRight.addEventListener("mouseleave", () => { keys["arrowright"] = false; });
 });
 
 function triggerFirstJump(){
@@ -2118,6 +2116,7 @@ function clearNameError() {
 
 function goToShopScreen() {
  unlockAudioContext();
+ requestMotionPermission();
  const inputEl = document.getElementById("playerNameInput");
  const errorEl = document.getElementById("nameErrorMsg");
  const nameInput = inputEl.value.trim();
@@ -2130,7 +2129,7 @@ function goToShopScreen() {
   errorEl.textContent = "⚠️ ¡PON UN NOMBRE PARA JUGAR!";
   inputEl.focus();
   return;
-}
+ }
 
  playMenuClick();
  clearNameError();
@@ -2166,6 +2165,7 @@ function goToShopScreenFromDeath() {
 
 function startReadyGame() {
  unlockAudioContext();
+ requestMotionPermission();
  cancelAnimationFrame(avatarAnimId);
  fadeOutAudio(introMusic, 600);
  bgMusic.currentTime = 0;
@@ -2461,8 +2461,14 @@ function update(){
 
  let acceleration=.8*dt;
 
- if(keys["arrowleft"]||keys["a"])player.vx-=acceleration;
- if(keys["arrowright"]||keys["d"])player.vx+=acceleration;
+ // Movimiento por teclado o respaldo táctil
+ if(keys["arrowleft"]||keys["a"]||keys["touchleft"]) player.vx-=acceleration;
+ if(keys["arrowright"]||keys["d"]||keys["touchright"]) player.vx+=acceleration;
+
+ // Movimiento por inclinación del celular (Giroscopio)
+ if (Math.abs(tiltInput) > 0) {
+  player.vx += tiltInput * acceleration * 1.45;
+ }
 
  if(hasBeer){
   player.vx += Math.sin(frame * 0.14) * 0.45 * dt;
@@ -2487,7 +2493,7 @@ function update(){
  }
 
  player.vx*=Math.pow(.88,dt);
- player.vx=clamp(player.vx,-7,7);
+ player.vx=clamp(player.vx,-7.5,7.5);
  player.x+=player.vx*dt;
 
  if(player.x<-20)player.x=W+20;
