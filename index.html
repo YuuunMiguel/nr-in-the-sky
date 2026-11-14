@@ -1108,7 +1108,7 @@ function runLooneyIntro(timestamp) {
 }
 introAnimId = requestAnimationFrame(runLooneyIntro);
 
-// --- SISTEMA DE AUDIO & MÚSICA & MUTE (ROBUSTO PC Y MÓVIL) ---
+// --- SISTEMA DE AUDIO & MÚSICA & MUTE CON .MP3 ---
 let isMuted = false;
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -1116,7 +1116,6 @@ function unlockAudioContext() {
  if (audioCtx && audioCtx.state === 'suspended') {
   audioCtx.resume();
  }
- // Forzar reproducción de pistas si estaban pausadas por políticas del navegador
  if (!isMuted) {
   if (introMusic.paused && !document.getElementById("shopScreen").classList.contains("hidden")) {
    introMusic.play().catch(e => {});
@@ -1150,15 +1149,16 @@ function toggleMute() {
  }
 }
 
-const introMusic = new Audio('intro.wav');
+// CORREGIDO: Archivos reales .mp3
+const introMusic = new Audio('intro.mp3');
 introMusic.loop = true;
 introMusic.volume = 0.5;
 
-const bgMusic = new Audio('fye.wav');
+const bgMusic = new Audio('fye.mp3');
 bgMusic.loop = true;
 bgMusic.volume = 0.5;
 
-const deadMusic = new Audio('dead.wav');
+const deadMusic = new Audio('dead.mp3');
 deadMusic.loop = false;
 deadMusic.volume = 0.6;
 
