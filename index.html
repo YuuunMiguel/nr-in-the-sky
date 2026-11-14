@@ -28,7 +28,7 @@ canvas{width:100%;height:100%;display:block;}
 }
 #hud div{
  padding:5px 8px;background:rgba(8,4,20,0.88);
- border:1px solid #65ffae;
+ /* Marco neón del HUD eliminado como pediste */
 }
 #livesDisplay{letter-spacing:2px;}
 #powerContainer{
@@ -52,7 +52,7 @@ canvas{width:100%;height:100%;display:block;}
  height:100%;
 }
 
-/* CONTROLES INFERIORES CENTRALES (MUTE Y PAUSA JUNTOS) */
+/* CONTROLES INFERIORES CENTRALES */
 #bottomControls {
  position: absolute;
  bottom: 15px;
@@ -79,6 +79,7 @@ canvas{width:100%;height:100%;display:block;}
  cursor: pointer;
  user-select: none;
  -webkit-user-select: none;
+ box-shadow: 0 0 8px rgba(255, 89, 216, 0.3);
 }
 .ctrl-btn:active {
  transform: scale(0.90);
@@ -91,22 +92,9 @@ canvas{width:100%;height:100%;display:block;}
  display:flex;flex-direction:column;
  align-items:center;justify-content:center;
  text-align:center;padding:12px;
- background:radial-gradient(ellipse at center,#32105bf2,#060312fa);
-}
-
-/* EFECTOS VISUALES AVANZADOS EXCLUSIVOS PARA PC (PANTALLAS GRANDES) */
-@media (min-width: 769px) and (hover: hover) {
- .screen {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  background: radial-gradient(ellipse at center, rgba(50, 16, 91, 0.88), rgba(6, 3, 18, 0.95));
- }
- .ctrl-btn {
-  box-shadow: 0 0 12px rgba(255, 89, 216, 0.45);
- }
- .shop-kiosk-container, .death-box {
-  box-shadow: 0 0 22px rgba(156, 0, 255, 0.35);
- }
+ backdrop-filter: blur(4px);
+ -webkit-backdrop-filter: blur(4px);
+ background: radial-gradient(ellipse at center, rgba(50, 16, 91, 0.85), rgba(6, 3, 18, 0.92));
 }
 
 .screen h1{
@@ -164,6 +152,7 @@ canvas{width:100%;height:100%;display:block;}
  border-radius: 8px;
  padding: 8px 10px;
  margin: 4px 0;
+ box-shadow: 0 0 14px rgba(156, 0, 255, 0.25);
 }
 .shop-left-pane {
  display: flex;
@@ -299,6 +288,7 @@ canvas{width:100%;height:100%;display:block;}
  border:3px solid #65ffae;
  padding:16px 20px;border-radius:10px;width:88%;max-width:340px;
  text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;
+ box-shadow: 0 0 14px rgba(156, 0, 255, 0.25);
 }
 .death-box h2{
  font-family:'Press Start 2P';font-size:17px;color:#ff4d79;
@@ -334,7 +324,7 @@ canvas{width:100%;height:100%;display:block;}
 </div>
 <div id="powerContainer"></div>
 
-<!-- Botones inferiores centrales juntos (Mute y Pausa) -->
+<!-- Botones inferiores centrales juntos -->
 <div id="bottomControls">
  <button id="muteBtn" class="ctrl-btn" onclick="toggleMute()">🔊</button>
  <button id="pauseBtn" class="ctrl-btn" onclick="togglePause()">Ⅱ</button>
@@ -397,7 +387,7 @@ canvas{width:100%;height:100%;display:block;}
 </div>
 </div>
 
-<!-- SDKs de Firebase (Compat para HTML plano) -->
+<!-- SDKs de Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
@@ -421,7 +411,6 @@ const canvas=document.getElementById("canvas");
 const ctx=canvas.getContext("2d", { alpha: false, desynchronized: true });
 const W=450,H=760;
 
-// --- DETECCIÓN DE DISPOSITIVO MÓVIL ---
 const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.matchMedia("(pointer: coarse)").matches;
 
 // --- INTRO ANIMADO ESTILO LOONEY TUNES ---
@@ -1828,12 +1817,12 @@ let gyroEnabled = false;
 const rand=(a,b)=>Math.random()*(b-a)+a;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
-// --- CONTROL POR INCLINACIÓN (SÓLO MÓVIL) ---
+// --- GIROSCOPIO CON MENOS SENSIBILIDAD ---
 function handleOrientation(event) {
- if (!isMobileDevice) return; // En PC se ignoran los eventos del giroscopio
+ if (!isMobileDevice) return;
  if (event.gamma === null || event.gamma === undefined) return;
- const deadzone = 1.2; 
- const maxTilt = 13;   
+ const deadzone = 1.5; // Zona muerta ligeramente ampliada para evitar temblores
+ const maxTilt = 17;   // Aumentado de 13 a 17 para que sea menos sensible y más controlable
  let gamma = event.gamma;
 
  if (Math.abs(gamma) < deadzone) {
@@ -2277,11 +2266,9 @@ function update(stepRatio = 1){
 
  let acceleration = 0.95 * dt;
 
- // Movimiento por teclado (PC)
  if(keys["arrowleft"]||keys["a"]||keys["touchleft"]) player.vx -= acceleration;
  if(keys["arrowright"]||keys["d"]||keys["touchright"]) player.vx += acceleration;
 
- // Giroscopio ultra sensible (Sólo móvil)
  if (isMobileDevice && Math.abs(rawTiltInput) > 0) {
   player.vx += rawTiltInput * acceleration * 2.3;
  }
