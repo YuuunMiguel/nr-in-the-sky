@@ -9,8 +9,6 @@
   <meta property="og:description" content="Geekeado hasta el cielo, llega al infinito y cuidate de los obstaculos!">
   <meta property="og:image" content="https://yuuunmiguel.github.io/nr-in-the-sky/preview.png">
   <meta property="og:url" content="https://yuuunmiguel.github.io/nr-in-the-sky/">
-  
-  <!-- Tipo de contenido -->
   <meta property="og:type" content="website">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
@@ -36,7 +34,6 @@ canvas{width:100%;height:100%;display:block;}
 }
 #hud div{
  padding:5px 8px;background:rgba(8,4,20,0.88);
- /* Marco neón del HUD eliminado como pediste */
 }
 #livesDisplay{letter-spacing:2px;}
 #powerContainer{
@@ -1819,44 +1816,9 @@ let lastPowerHUDHash = "";
 document.getElementById("best").textContent=best;
 
 const keys={};
-let rawTiltInput = 0;
-let gyroEnabled = false;
 
 const rand=(a,b)=>Math.random()*(b-a)+a;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-
-// --- GIROSCOPIO CON MENOS SENSIBILIDAD ---
-function handleOrientation(event) {
- if (!isMobileDevice) return;
- if (event.gamma === null || event.gamma === undefined) return;
- const deadzone = 1.5; // Zona muerta ligeramente ampliada para evitar temblores
- const maxTilt = 17;   // Aumentado de 13 a 17 para que sea menos sensible y más controlable
- let gamma = event.gamma;
-
- if (Math.abs(gamma) < deadzone) {
-  rawTiltInput = 0;
- } else {
-  const adjusted = gamma > 0 ? gamma - deadzone : gamma + deadzone;
-  rawTiltInput = clamp(adjusted / (maxTilt - deadzone), -1, 1);
- }
-}
-
-function requestMotionPermission() {
- if (!isMobileDevice || gyroEnabled) return;
- if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
-  DeviceOrientationEvent.requestPermission()
-   .then(response => {
-    if (response === "granted") {
-     window.addEventListener("deviceorientation", handleOrientation);
-     gyroEnabled = true;
-    }
-   })
-   .catch(err => console.warn("Permiso de giroscopio denegado:", err));
- } else if (typeof DeviceOrientationEvent !== "undefined") {
-  window.addEventListener("deviceorientation", handleOrientation);
-  gyroEnabled = true;
- }
-}
 
 window.addEventListener("keydown",e=>{
  if(["arrowleft","arrowright","arrowup"," "].includes(e.key.toLowerCase()))e.preventDefault();
@@ -1871,7 +1833,6 @@ window.addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
 
 canvas.addEventListener("touchstart", (e) => {
  unlockAudioContext();
- requestMotionPermission();
  if(waitingForFirstJump && running && !isDead) {
   triggerFirstJump();
   return;
@@ -1895,7 +1856,6 @@ canvas.addEventListener("touchend", () => {
 });
 
 canvas.addEventListener("click", () => {
- requestMotionPermission();
  if(waitingForFirstJump && running && !isDead) {
   triggerFirstJump();
  }
@@ -1922,7 +1882,6 @@ function clearNameError() {
 
 function goToShopScreen() {
  unlockAudioContext();
- requestMotionPermission();
  const inputEl = document.getElementById("playerNameInput");
  const errorEl = document.getElementById("nameErrorMsg");
  const nameInput = inputEl.value.trim();
@@ -1978,7 +1937,6 @@ function goToShopScreenFromDeath() {
 
 function startReadyGame() {
  unlockAudioContext();
- requestMotionPermission();
  cancelAnimationFrame(avatarAnimId);
  
  introMusic.pause();
@@ -2208,7 +2166,11 @@ function update(stepRatio = 1){
 
  const dt = timeScale * stepRatio;
  frame += dt;
- difficulty = 1 + highest / 1800;
+
+ // --- DIFICULTAD PROGRESIVA SUAVE Y ESTABLE ---
+ // Aumenta de forma controlada cada 1000 puntos sin volverse infinita ni buguear las físicas
+ difficulty = 1 + (highest / 1500) * 0.75;
+ if (difficulty > 2.5) difficulty = 2.5; // Tope máximo saludable de velocidad/movimiento
 
  if(player.invuln > 0) player.invuln -= stepRatio;
 
@@ -2277,16 +2239,12 @@ function update(stepRatio = 1){
  if(keys["arrowleft"]||keys["a"]||keys["touchleft"]) player.vx -= acceleration;
  if(keys["arrowright"]||keys["d"]||keys["touchright"]) player.vx += acceleration;
 
- if (isMobileDevice && Math.abs(rawTiltInput) > 0) {
-  player.vx += rawTiltInput * acceleration * 2.3;
- }
-
  if(hasBeer){
   player.vx += Math.sin(frame * 0.14) * 0.45 * dt;
  }
 
  player.vx *= Math.pow(0.86, dt);
- player.vx = clamp(player.vx, -10.5, 10.5);
+ player.vx = clamp(player.vx, -9.5, 9.5); // Límite seguro de velocidad horizontal
  player.x += player.vx * dt;
 
  if(player.x<-20)player.x=W+20;
@@ -2330,7 +2288,7 @@ function update(stepRatio = 1){
 
  for(let p of platforms){
   if(p.type==="moving"){
-   p.x+=p.dx*difficulty*.6*dt;
+   p.x+=p.dx*difficulty*.5*dt;
    if(p.x<15||p.x+p.w>W-15)p.dx*=-1;
   }
  }
