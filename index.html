@@ -1831,7 +1831,8 @@ window.addEventListener("keydown",e=>{
 });
 window.addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
 
-canvas.addEventListener("touchstart", (e) => {
+// CONTROLES TÁCTILES MEJORADOS (Soporta toque y arrastre / touchmove)
+const handleTouchMoveOrStart = (e) => {
  unlockAudioContext();
  if(waitingForFirstJump && running && !isDead) {
   triggerFirstJump();
@@ -1848,7 +1849,10 @@ canvas.addEventListener("touchstart", (e) => {
    keys["touchleft"] = false;
   }
  }
-}, { passive: true });
+};
+
+canvas.addEventListener("touchstart", handleTouchMoveOrStart, { passive: true });
+canvas.addEventListener("touchmove", handleTouchMoveOrStart, { passive: true });
 
 canvas.addEventListener("touchend", () => {
  keys["touchleft"] = false;
@@ -2011,18 +2015,19 @@ function generatePlatform(y){
   hx = lanes[oppositeLaneIndex] + w / 2;
   hy = y - 50;
 
-  let safeFromHazards = hazards.every(h => Math.hypot(h.x - hx, h.y - hy) > 110);
+  // Validación flexible para evitar bloqueo de sierras tras 1000 puntos
+  let safeFromHazards = hazards.every(h => Math.abs(h.y - hy) > 75 || Math.hypot(h.x - hx, h.y - hy) > 85);
 
-  if (safeFromHazards) {
+  if (safeFromHazards || stepCount % 4 === 0) {
    const isHazardMoving = (stepCount % 3 !== 0);
    hazards.push({
     x:hx,y:hy,r:17,
     angle:0,
     moving: isHazardMoving,
-    dx: isHazardMoving ? 1.6 : 0,
+    dx: isHazardMoving ? 1.8 : 0,
     minX: lanes[0] + 15,
     maxX: lanes[2] + w - 15,
-    speed:0.08 * (stepCount % 2 === 0 ? 1 : -1)
+    speed:0.09 * (stepCount % 2 === 0 ? 1 : -1)
    });
   }
  }
@@ -2167,10 +2172,9 @@ function update(stepRatio = 1){
  const dt = timeScale * stepRatio;
  frame += dt;
 
- // --- DIFICULTAD PROGRESIVA SUAVE Y ESTABLE ---
- // Aumenta de forma controlada cada 1000 puntos sin volverse infinita ni buguear las físicas
- difficulty = 1 + (highest / 1500) * 0.75;
- if (difficulty > 2.5) difficulty = 2.5; // Tope máximo saludable de velocidad/movimiento
+ // --- DIFICULTAD PROGRESIVA CONTINUA (SIN TOPE BAJO) ---
+ difficulty = 1 + (highest / 750) * 0.95;
+ if (difficulty > 3.8) difficulty = 3.8; // Escala progresiva fuerte y fluida
 
  if(player.invuln > 0) player.invuln -= stepRatio;
 
@@ -2234,7 +2238,8 @@ function update(stepRatio = 1){
   }
  }
 
- let acceleration = 0.95 * dt;
+ // Aceleración incrementada para mayor agilidad en móvil y PC
+ let acceleration = 1.25 * dt;
 
  if(keys["arrowleft"]||keys["a"]||keys["touchleft"]) player.vx -= acceleration;
  if(keys["arrowright"]||keys["d"]||keys["touchright"]) player.vx += acceleration;
@@ -2243,8 +2248,8 @@ function update(stepRatio = 1){
   player.vx += Math.sin(frame * 0.14) * 0.45 * dt;
  }
 
- player.vx *= Math.pow(0.86, dt);
- player.vx = clamp(player.vx, -9.5, 9.5); // Límite seguro de velocidad horizontal
+ player.vx *= Math.pow(0.84, dt);
+ player.vx = clamp(player.vx, -11.5, 11.5);
  player.x += player.vx * dt;
 
  if(player.x<-20)player.x=W+20;
@@ -2288,7 +2293,7 @@ function update(stepRatio = 1){
 
  for(let p of platforms){
   if(p.type==="moving"){
-   p.x+=p.dx*difficulty*.5*dt;
+   p.x+=p.dx*difficulty*.6*dt;
    if(p.x<15||p.x+p.w>W-15)p.dx*=-1;
   }
  }
