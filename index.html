@@ -1994,8 +1994,9 @@ function startGameDirect(){
 function generatePlatform(y){
  stepCount++;
  const w = 110;
- const lanes = [30, (W - w) / 2, W - w - 30];
- const pattern = [1, 0, 2, 1, 2, 0];
+ // Distribución simétrica de carriles centrada en el eje del canvas
+ const lanes = [35, (W - w) / 2, W - w - 35];
+ const pattern = [1, 0, 1, 2, 1, 2];
  const laneIndex = pattern[stepCount % pattern.length];
  const x = lanes[laneIndex];
 
@@ -2009,27 +2010,25 @@ function generatePlatform(y){
 
  platforms.push(platform);
 
+ const platformAltitude = 720 - y;
  let hx = null, hy = null;
- if(stepCount % 2 === 0){
+
+ // NO SALEN SIERRAS HASTA LOS 500 METROS
+ if (platformAltitude >= 500 && stepCount % 2 === 0) {
   const oppositeLaneIndex = 2 - laneIndex;
   hx = lanes[oppositeLaneIndex] + w / 2;
   hy = y - 50;
 
-  // Validación flexible para evitar bloqueo de sierras tras 1000 puntos
-  let safeFromHazards = hazards.every(h => Math.abs(h.y - hy) > 75 || Math.hypot(h.x - hx, h.y - hy) > 85);
-
-  if (safeFromHazards || stepCount % 4 === 0) {
-   const isHazardMoving = (stepCount % 3 !== 0);
-   hazards.push({
-    x:hx,y:hy,r:17,
-    angle:0,
-    moving: isHazardMoving,
-    dx: isHazardMoving ? 1.8 : 0,
-    minX: lanes[0] + 15,
-    maxX: lanes[2] + w - 15,
-    speed:0.09 * (stepCount % 2 === 0 ? 1 : -1)
-   });
-  }
+  const isHazardMoving = (stepCount % 3 !== 0);
+  hazards.push({
+   x:hx,y:hy,r:17,
+   angle:0,
+   moving: isHazardMoving,
+   dx: isHazardMoving ? 1.8 : 0,
+   minX: lanes[0] + 15,
+   maxX: lanes[2] + w - 15,
+   speed:0.09 * (stepCount % 2 === 0 ? 1 : -1)
+  });
  }
 
  if(stepCount % 3 === 0){
@@ -2172,9 +2171,9 @@ function update(stepRatio = 1){
  const dt = timeScale * stepRatio;
  frame += dt;
 
- // --- DIFICULTAD PROGRESIVA CONTINUA (SIN TOPE BAJO) ---
- difficulty = 1 + (highest / 750) * 0.95;
- if (difficulty > 3.8) difficulty = 3.8; // Escala progresiva fuerte y fluida
+ // --- DIFICULTAD ESCALONADA DE 1000 EN 1000 METROS ---
+ difficulty = 1 + Math.floor(highest / 1000) * 0.35;
+ if (difficulty > 3.5) difficulty = 3.5;
 
  if(player.invuln > 0) player.invuln -= stepRatio;
 
@@ -2238,7 +2237,6 @@ function update(stepRatio = 1){
   }
  }
 
- // Aceleración incrementada para mayor agilidad en móvil y PC
  let acceleration = 1.25 * dt;
 
  if(keys["arrowleft"]||keys["a"]||keys["touchleft"]) player.vx -= acceleration;
