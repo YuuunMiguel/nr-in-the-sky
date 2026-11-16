@@ -96,7 +96,7 @@ canvas{width:100%;height:100%;display:block;}
  position:absolute;inset:0;z-index:5;
  display:flex;flex-direction:column;
  align-items:center;justify-content:center;
- text-align:center;padding:12px;
+ text-align:center;padding:10px;
  backdrop-filter: blur(4px);
  -webkit-backdrop-filter: blur(4px);
  background: radial-gradient(ellipse at center, rgba(50, 16, 91, 0.85), rgba(6, 3, 18, 0.92));
@@ -104,23 +104,54 @@ canvas{width:100%;height:100%;display:block;}
 
 .screen h1{
  font-family:'Press Start 2P';
- font-size:clamp(16px,5vw,22px);
- line-height:1.4;color:#78ff9c;
+ font-size:clamp(15px,4.8vw,21px);
+ line-height:1.35;color:#78ff9c;
  text-shadow:3px 3px #d000ff;
- margin:2px 0;
+ margin:2px 0 4px 0;
 }
 .screen p{font-size:18px;line-height:1.2;margin:4px 0;}
+.auth-box{
+ display:flex;flex-direction:column;align-items:center;gap:4px;
+ width:92%;max-width:310px;
+ background:rgba(12, 5, 26, 0.78);
+ border:1px solid #9c00ff;
+ border-radius:8px;
+ padding:7px 10px;
+ margin:2px 0;
+}
 .input-group{
- display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;margin:2px 0;
+ display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;
 }
 .input-label{
  font-family:'Press Start 2P';font-size:7px;color:#ff5de5;
 }
+.pass-wrap{
+ position:relative;
+ width:88%;
+ max-width:230px;
+ display:flex;
+ align-items:center;
+}
 .screen input{
  font-family:'VT323',monospace;font-size:20px;
  padding:4px 8px;background:#100822;border:2px solid #65ffae;
- color:#65ffae;text-align:center;width:70%;max-width:180px;
+ color:#65ffae;text-align:center;width:88%;max-width:230px;
  outline:none;border-radius:4px;
+}
+.pass-wrap input{
+ width:100%;
+ padding-right:30px;
+}
+.toggle-pass-btn{
+ position:absolute;
+ right:4px;
+ background:transparent !important;
+ border:none !important;
+ color:#ff7de1 !important;
+ font-size:14px !important;
+ padding:2px 4px !important;
+ margin:0 !important;
+ cursor:pointer;
 }
 .screen input::placeholder{
  color: rgba(101, 255, 174, 0.35);
@@ -130,12 +161,26 @@ canvas{width:100%;height:100%;display:block;}
  border-color: #ff3b5c;
  animation: inputShake 0.3s ease;
 }
+.pass-rules-hint{
+ font-family:'VT323',monospace;
+ font-size:14px;
+ line-height:1.1;
+ color:#b8d8ff;
+ margin-top:2px;
+}
+.pass-rules-hint strong{
+ color:#ffbe2e;
+}
 .error-msg{
  font-family: 'Press Start 2P', monospace;
- font-size: 7px;
+ font-size: 6.5px;
+ line-height: 1.35;
  color: #ff4d79;
- margin-top: 3px;
- min-height: 10px;
+ margin-top: 2px;
+ min-height: 12px;
+}
+.error-msg.ok{
+ color: #65ffae;
 }
 @keyframes inputShake{
  0%, 100% { transform: translateX(0); }
@@ -234,7 +279,7 @@ canvas{width:100%;height:100%;display:block;}
  background:rgba(12, 5, 26, 0.85);
  border:2px dashed #9c00ff;
  padding:3px 6px;margin:2px 0;
- width:90%;max-width:300px;border-radius:6px;
+ width:92%;max-width:310px;border-radius:6px;
 }
 .leaderboard-box h3{
  font-family:'Press Start 2P';font-size:7px;color:#ff5de5;margin:2px 0;
@@ -248,10 +293,14 @@ canvas{width:100%;height:100%;display:block;}
 }
 
 .screen button{
- font-family:'Press Start 2P';font-size:9px;
- padding:8px 14px;color:#080511;background:#76ff9c;
+ font-family:'Press Start 2P';font-size:8.5px;
+ padding:8px 13px;color:#080511;background:#76ff9c;
  border:3px solid white;
  cursor:pointer;margin-top:4px;
+}
+.screen button:disabled{
+ opacity:0.6;
+ cursor:wait;
 }
 .screen button:active{transform:scale(0.96);background:#ff5de5}
 .hidden{display:none!important}
@@ -335,19 +384,32 @@ canvas{width:100%;height:100%;display:block;}
  <button id="pauseBtn" class="ctrl-btn" onclick="togglePause()">Ⅱ</button>
 </div>
 
-<!-- Pantalla 1: Inicio -->
+<!-- Pantalla 1: Registro / Inicio de Sesión -->
 <div id="startScreen" class="screen">
  <h1>NR<br>IN THE SKY</h1>
- <div class="input-group">
-  <span class="input-label">✍️ ESCRIBE TU NOMBRE:</span>
-  <input type="text" id="playerNameInput" placeholder="TU NOMBRE..." maxlength="10" oninput="clearNameError()">
-  <span id="nameErrorMsg" class="error-msg"></span>
+ <div class="auth-box">
+  <div class="input-group">
+   <span class="input-label">👤 NOMBRE DE USUARIO (ÚNICO):</span>
+   <input type="text" id="playerNameInput" placeholder="EJ. KIDYIVIN" maxlength="12" autocomplete="username" oninput="clearAuthError()">
+  </div>
+  <div class="input-group">
+   <span class="input-label">🔑 CONTRASEÑA:</span>
+   <div class="pass-wrap">
+    <input type="password" id="playerPassInput" placeholder="MÍN. 8 CARACTERES" maxlength="32" autocomplete="current-password" oninput="clearAuthError()">
+    <button type="button" class="toggle-pass-btn" onclick="togglePassVisibility()" title="Ver/Ocultar">👁️</button>
+   </div>
+   <div class="pass-rules-hint">
+    Mín. <strong>8 caracteres</strong>, con <strong>números (0-9)</strong> y <strong>especiales válidos</strong>:<br>
+    <strong>! @ # $ % ^ &amp; * ( ) _ + - = [ ] { } ; : , . ?</strong>
+   </div>
+  </div>
+  <span id="authStatusMsg" class="error-msg"></span>
  </div>
  <div class="leaderboard-box">
   <h3>TOP RECORDS</h3>
   <ul id="leaderboardList" class="leaderboard-list"></ul>
  </div>
- <button onclick="goToShopScreen()">START GAME</button>
+ <button id="authSubmitBtn" onclick="authenticateAndGoToShop()">ENTRAR / REGISTRAR</button>
 </div>
 
 <!-- Pantalla 2: Tienda de Skins Estilo Kiosko -->
@@ -355,7 +417,7 @@ canvas{width:100%;height:100%;display:block;}
  <h1>SKIN SHOP</h1>
  <div class="shop-kiosk-container">
   <div class="shop-left-pane">
-   <h3>AVATAR</h3>
+   <h3 id="shopUserBadge">AVATAR</h3>
    <canvas id="avatarCanvas" width="90" height="85" style="background:transparent;"></canvas>
    <div class="money-badge">💰 $<span id="playerMoneyDisplay">1000</span></div>
   </div>
@@ -1213,8 +1275,12 @@ function playShieldSound() {
  });
 }
 
-let playerMoney = Number(localStorage.getItem("frogMoney") || 1000);
-document.getElementById("playerMoneyDisplay").textContent = playerMoney;
+// --- DATOS DE CUENTA Y SINCRONIZACIÓN CON FIREBASE ---
+let playerName = "";
+let currentUserDocId = "";
+let currentUserPasswordHash = "";
+let playerMoney = 1000;
+let best = 0;
 
 let skins = [
  { id: 'classic', name: 'Verde', base: '#35e958', light: '#71ff81', stroke: '#125b30', price: 0, unlocked: true },
@@ -1234,12 +1300,6 @@ let skins = [
  { id: 'diamond', name: 'Diamante', base: '#d9f2ff', light: '#ffffff', stroke: '#305b6e', price: 2000, unlocked: false },
  { id: 'rainbow', name: 'Arcoíris', base: 'linear-gradient(135deg,#ff3366,#ffbe2e,#35e958,#00eaff,#a64fff)', light: '#ffffff', stroke: '#3b0066', price: 3000, unlocked: false, rainbow: true }
 ];
-
-let savedUnlocked = JSON.parse(localStorage.getItem("frogUnlockedSkins") || '["classic","pink","gold","sizzurp"]');
-skins.forEach(s => {
- if(savedUnlocked.includes(s.id)) s.unlocked = true;
-});
-
 let currentSkin = skins[0];
 
 // --- PERSONAJES / ANIMALES ---
@@ -1252,12 +1312,7 @@ let characters = [
  { id: 'crocodile', name: 'Cocodrilo', icon: '🐊', deathText: 'EL COCODRILO SE QUEDÓ SIN PANTANO...', price: 900, unlocked: false },
  { id: 'bear', name: 'Oso', icon: '🐻', deathText: 'EL OSO SE FUE A HIBERNAR AL CIELO...', price: 1100, unlocked: false }
 ];
-
-let savedUnlockedChars = JSON.parse(localStorage.getItem("frogUnlockedChars") || '["frog"]');
-characters.forEach(c => {
- if(savedUnlockedChars.includes(c.id)) c.unlocked = true;
-});
-let currentChar = characters.find(c => c.id === (localStorage.getItem("frogSelectedChar") || "frog")) || characters[0];
+let currentChar = characters[0];
 
 // --- ACCESORIOS ---
 let accessories = [
@@ -1268,12 +1323,220 @@ let accessories = [
  { id: 'crown', name: 'Corona', icon: '👑', price: 850, unlocked: false },
  { id: 'headphones', name: 'Audífonos', icon: '🎧', price: 650, unlocked: false }
 ];
+let currentAcc = accessories[0];
 
-let savedUnlockedAccs = JSON.parse(localStorage.getItem("frogUnlockedAccs") || '["none"]');
-accessories.forEach(a => {
- if(savedUnlockedAccs.includes(a.id)) a.unlocked = true;
-});
-let currentAcc = accessories.find(a => a.id === (localStorage.getItem("frogSelectedAcc") || "none")) || accessories[0];
+function syncUserProgressToCloud() {
+ if (!currentUserDocId) return;
+ const unlockedSkins = skins.filter(s => s.unlocked).map(s => s.id);
+ const unlockedChars = characters.filter(c => c.unlocked).map(c => c.id);
+ const unlockedAccs = accessories.filter(a => a.unlocked).map(a => a.id);
+
+ db.collection("users").doc(currentUserDocId).update({
+  passwordHash: currentUserPasswordHash,
+  bestScore: best,
+  money: playerMoney,
+  unlockedSkins,
+  unlockedChars,
+  unlockedAccs,
+  selectedSkin: currentSkin.id,
+  selectedChar: currentChar.id,
+  selectedAcc: currentAcc.id,
+  updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+ }).catch(err => console.error("Error sincronizando progreso:", err));
+}
+
+function loadUserDataFromDoc(data) {
+ playerName = data.displayName || currentUserDocId.toUpperCase();
+ best = Number(data.bestScore || 0);
+ playerMoney = Number(data.money !== undefined ? data.money : 1000);
+
+ const uSkins = data.unlockedSkins || ["classic", "pink", "gold", "sizzurp"];
+ skins.forEach(s => {
+  s.unlocked = uSkins.includes(s.id) || s.price === 0;
+ });
+ currentSkin = skins.find(s => s.id === (data.selectedSkin || "classic")) || skins[0];
+
+ const uChars = data.unlockedChars || ["frog"];
+ characters.forEach(c => {
+  c.unlocked = uChars.includes(c.id) || c.price === 0;
+ });
+ currentChar = characters.find(c => c.id === (data.selectedChar || "frog")) || characters[0];
+
+ const uAccs = data.unlockedAccs || ["none"];
+ accessories.forEach(a => {
+  a.unlocked = uAccs.includes(a.id) || a.price === 0;
+ });
+ currentAcc = accessories.find(a => a.id === (data.selectedAcc || "none")) || accessories[0];
+
+ document.getElementById("best").textContent = best;
+ document.getElementById("playerMoneyDisplay").textContent = playerMoney;
+ document.getElementById("shopUserBadge").textContent = playerName;
+}
+
+// --- ENCRIPTACIÓN SHA-256 Y VALIDACIÓN DE CONTRASEÑA ---
+async function hashPassword(plainText) {
+ const encoder = new TextEncoder();
+ const data = encoder.encode(plainText);
+ const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+ const hashArray = Array.from(new Uint8Array(hashBuffer));
+ return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+function validatePasswordRules(pwd) {
+ if (pwd.length < 8) {
+  return "⚠️ MÍNIMO 8 CARACTERES EN LA CONTRASEÑA.";
+ }
+ if (!/[0-9]/.test(pwd)) {
+  return "⚠️ INCLUYE AL MENOS UN NÚMERO (0-9).";
+ }
+ const allowedSpecialRegex = /[!@#$%^&*()_+\-=\[\]{};:,.?]/;
+ if (!allowedSpecialRegex.test(pwd)) {
+  return "⚠️ INCLUYE UN ESPECIAL: !@#$%^&*()_+-=[]{};:,.?";
+ }
+ // Verificar que no contenga caracteres no permitidos (espacios, emojis, etc.)
+ const fullAllowedRegex = /^[A-Za-z0-9!@#$%^&*()_+\-=\[\]{};:,.?]+$/;
+ if (!fullAllowedRegex.test(pwd)) {
+  return "⚠️ SOLO LETRAS, NÚMEROS Y !@#$%^&*()_+-=[]{};:,.?";
+ }
+ return null;
+}
+
+function togglePassVisibility() {
+ const passEl = document.getElementById("playerPassInput");
+ passEl.type = passEl.type === "password" ? "text" : "password";
+}
+
+function clearAuthError() {
+ document.getElementById("playerNameInput").classList.remove("input-error");
+ document.getElementById("playerPassInput").classList.remove("input-error");
+ const msgEl = document.getElementById("authStatusMsg");
+ msgEl.classList.remove("ok");
+ msgEl.textContent = "";
+}
+
+function showAuthError(msg, targetInputId) {
+ playHitSound();
+ const msgEl = document.getElementById("authStatusMsg");
+ msgEl.classList.remove("ok");
+ msgEl.textContent = msg;
+ if (targetInputId) {
+  const el = document.getElementById(targetInputId);
+  el.classList.remove("input-error");
+  void el.offsetWidth;
+  el.classList.add("input-error");
+  el.focus();
+ }
+}
+
+async function authenticateAndGoToShop() {
+ unlockAudioContext();
+ const nameInputEl = document.getElementById("playerNameInput");
+ const passInputEl = document.getElementById("playerPassInput");
+ const submitBtn = document.getElementById("authSubmitBtn");
+ const msgEl = document.getElementById("authStatusMsg");
+
+ const rawName = nameInputEl.value.trim();
+ const rawPass = passInputEl.value;
+
+ if (rawName.length < 3) {
+  showAuthError("⚠️ EL NOMBRE DEBE TENER AL MENOS 3 CARACTERES.", "playerNameInput");
+  return;
+ }
+ if (!/^[A-Za-z0-9_]+$/.test(rawName)) {
+  showAuthError("⚠️ NOMBRE: SOLO LETRAS, NÚMEROS O GUION BAJO (_).", "playerNameInput");
+  return;
+ }
+ if (!rawPass) {
+  showAuthError("⚠️ ESCRIBE UNA CONTRASEÑA.", "playerPassInput");
+  return;
+ }
+
+ const docId = rawName.toLowerCase();
+ submitBtn.disabled = true;
+ msgEl.classList.add("ok");
+ msgEl.textContent = "VERIFICANDO CUENTA...";
+
+ try {
+  const inputHash = await hashPassword(rawPass);
+  const userRef = db.collection("users").doc(docId);
+  const docSnap = await userRef.get();
+
+  if (docSnap.exists) {
+   // El nombre ya está registrado: comprobar contraseña para iniciar sesión
+   const userData = docSnap.data();
+   if (userData.passwordHash !== inputHash) {
+    submitBtn.disabled = false;
+    showAuthError("⚠️ ESE NOMBRE YA EXISTE O CONTRASEÑA INCORRECTA. ELIGE OTRO NOMBRE.", "playerNameInput");
+    return;
+   }
+
+   currentUserDocId = docId;
+   currentUserPasswordHash = inputHash;
+   loadUserDataFromDoc(userData);
+   msgEl.classList.add("ok");
+   msgEl.textContent = `✅ ¡BIENVENIDO DE VUELTA, ${playerName}!`;
+  } else {
+   // Nombre disponible: validar reglas estrictas de contraseña para registrar cuenta nueva
+   const pwdError = validatePasswordRules(rawPass);
+   if (pwdError) {
+    submitBtn.disabled = false;
+    showAuthError(pwdError, "playerPassInput");
+    return;
+   }
+
+   const newUserProfile = {
+    displayName: rawName.toUpperCase(),
+    passwordHash: inputHash,
+    bestScore: 0,
+    money: 1000,
+    unlockedSkins: ["classic", "pink", "gold", "sizzurp"],
+    unlockedChars: ["frog"],
+    unlockedAccs: ["none"],
+    selectedSkin: "classic",
+    selectedChar: "frog",
+    selectedAcc: "none",
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+   };
+
+   await userRef.set(newUserProfile);
+   currentUserDocId = docId;
+   currentUserPasswordHash = inputHash;
+   loadUserDataFromDoc(newUserProfile);
+   msgEl.classList.add("ok");
+   msgEl.textContent = `✅ ¡CUENTA REGISTRADA: ${playerName}!`;
+  }
+
+  playMenuClick();
+  setTimeout(() => {
+   submitBtn.disabled = false;
+   clearAuthError();
+   openShopAfterAuth();
+  }, 450);
+
+ } catch (err) {
+  console.error("Error de autenticación:", err);
+  submitBtn.disabled = false;
+  showAuthError("⚠️ ERROR DE CONEXIÓN CON FIREBASE. REINTENTA.", null);
+ }
+}
+
+function openShopAfterAuth() {
+ cancelAnimationFrame(skullAnimId);
+ cancelAnimationFrame(avatarAnimId);
+ document.getElementById("gameOverOverlay").classList.add("hidden");
+
+ bgMusic.pause();
+ bgMusic.currentTime = 0;
+ deadMusic.pause();
+ deadMusic.currentTime = 0;
+ introMusic.currentTime = 0;
+ introMusic.play().catch(e => {});
+
+ document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
+ document.getElementById("shopScreen").classList.remove("hidden");
+ renderSkinShop();
+ avatarAnimId = requestAnimationFrame(renderAvatarPreview);
+}
 
 let currentShopTab = 'skins';
 let avatarAnimId = null;
@@ -1377,14 +1640,13 @@ function renderSkinShop() {
 function selectOrBuySkin(skin) {
  if(skin.unlocked) {
   currentSkin = skin;
+  syncUserProgressToCloud();
  } else {
   if(playerMoney >= skin.price) {
    playerMoney -= skin.price;
    skin.unlocked = true;
    currentSkin = skin;
-   localStorage.setItem("frogMoney", playerMoney);
-   let unlockedIds = skins.filter(s => s.unlocked).map(s => s.id);
-   localStorage.setItem("frogUnlockedSkins", JSON.stringify(unlockedIds));
+   syncUserProgressToCloud();
    playPowerupSound();
   } else {
    playHitSound();
@@ -1396,16 +1658,13 @@ function selectOrBuySkin(skin) {
 function selectOrBuyChar(charObj) {
  if(charObj.unlocked) {
   currentChar = charObj;
-  localStorage.setItem("frogSelectedChar", charObj.id);
+  syncUserProgressToCloud();
  } else {
   if(playerMoney >= charObj.price) {
    playerMoney -= charObj.price;
    charObj.unlocked = true;
    currentChar = charObj;
-   localStorage.setItem("frogMoney", playerMoney);
-   localStorage.setItem("frogSelectedChar", charObj.id);
-   let unlockedIds = characters.filter(c => c.unlocked).map(c => c.id);
-   localStorage.setItem("frogUnlockedChars", JSON.stringify(unlockedIds));
+   syncUserProgressToCloud();
    playPowerupSound();
   } else {
    playHitSound();
@@ -1417,16 +1676,13 @@ function selectOrBuyChar(charObj) {
 function selectOrBuyAcc(accObj) {
  if(accObj.unlocked) {
   currentAcc = accObj;
-  localStorage.setItem("frogSelectedAcc", accObj.id);
+  syncUserProgressToCloud();
  } else {
   if(playerMoney >= accObj.price) {
    playerMoney -= accObj.price;
    accObj.unlocked = true;
    currentAcc = accObj;
-   localStorage.setItem("frogMoney", playerMoney);
-   localStorage.setItem("frogSelectedAcc", accObj.id);
-   let unlockedIds = accessories.filter(a => a.unlocked).map(a => a.id);
-   localStorage.setItem("frogUnlockedAccs", JSON.stringify(unlockedIds));
+   syncUserProgressToCloud();
    playPowerupSound();
   } else {
    playHitSound();
@@ -1767,30 +2023,32 @@ function renderAvatarPreview() {
  avatarAnimId = requestAnimationFrame(renderAvatarPreview);
 }
 
-let playerName = "";
-
-// --- LEADERBOARD EN TIEMPO REAL CON FIREBASE ---
+// --- LEADERBOARD EN TIEMPO REAL CON FIREBASE (TOP 3 POR USUARIO) ---
 function listenToLeaderboard() {
  const listEl = document.getElementById("leaderboardList");
  if (!listEl) return;
  listEl.innerHTML = "<li><span>Cargando...</span><span>...</span></li>";
 
- db.collection("leaderboard")
-   .orderBy("score", "desc")
+ db.collection("users")
+   .orderBy("bestScore", "desc")
    .limit(3)
    .onSnapshot((snapshot) => {
      listEl.innerHTML = "";
-     if (snapshot.empty) {
+     const validEntries = [];
+     snapshot.forEach((doc) => {
+       const data = doc.data();
+       if (data.bestScore > 0) validEntries.push(data);
+     });
+
+     if (validEntries.length === 0) {
        listEl.innerHTML = "<li><span>Sin registros</span><span>0m</span></li>";
        return;
      }
-     let idx = 0;
-     snapshot.forEach((doc) => {
-       const entry = doc.data();
+
+     validEntries.forEach((entry, idx) => {
        const li = document.createElement("li");
-       li.innerHTML = `<span>#${idx + 1} ${entry.name}</span><span>${entry.score}m</span>`;
+       li.innerHTML = `<span>#${idx + 1} ${entry.displayName}</span><span>${entry.bestScore}m</span>`;
        listEl.appendChild(li);
-       idx++;
      });
    }, (error) => {
      console.error("Error cargando leaderboard:", error);
@@ -1807,7 +2065,6 @@ let highest=0,difficulty=1,lastGenerationY=720;
 let stepCount=0;
 let frame=0,realFrame=0,shake=0,flash=0;
 let timeScale=1;
-let best=Number(localStorage.getItem("frogBest")||0);
 let lastTime=0;
 let animationId;
 let skullAnimId;
@@ -1829,7 +2086,6 @@ function handleDeviceOrientation(e) {
   gamma = -e.beta;
  }
 
- // Zona muerta considerable de +/- 7 grados para evitar movimientos nerviosos
  const deadzone = 7;
  const maxTilt = 28;
 
@@ -1906,50 +2162,6 @@ function updateLivesHUD(){
  document.getElementById("livesDisplay").textContent = hearts;
 }
 
-function clearNameError() {
- const inputEl = document.getElementById("playerNameInput");
- const errorEl = document.getElementById("nameErrorMsg");
- inputEl.classList.remove("input-error");
- errorEl.textContent = "";
-}
-
-function goToShopScreen() {
- unlockAudioContext();
- const inputEl = document.getElementById("playerNameInput");
- const errorEl = document.getElementById("nameErrorMsg");
- const nameInput = inputEl.value.trim();
-
- if (!nameInput) {
-  playHitSound();
-  inputEl.classList.remove("input-error");
-  void inputEl.offsetWidth; 
-  inputEl.classList.add("input-error");
-  errorEl.textContent = "⚠️ ¡PON UN NOMBRE PARA JUGAR!";
-  inputEl.focus();
-  return;
- }
-
- playMenuClick();
- clearNameError();
- playerName = nameInput.toUpperCase();
-
- cancelAnimationFrame(skullAnimId);
- cancelAnimationFrame(avatarAnimId);
- document.getElementById("gameOverOverlay").classList.add("hidden");
-
- bgMusic.pause();
- bgMusic.currentTime = 0;
- deadMusic.pause();
- deadMusic.currentTime = 0;
- introMusic.currentTime = 0;
- introMusic.play().catch(e => {});
-
- document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
- document.getElementById("shopScreen").classList.remove("hidden");
- renderSkinShop();
- avatarAnimId = requestAnimationFrame(renderAvatarPreview);
-}
-
 function goToShopScreenFromDeath() {
  cancelAnimationFrame(skullAnimId);
  cancelAnimationFrame(avatarAnimId);
@@ -2014,7 +2226,6 @@ function startGameDirect(){
 
  platforms.push({x:0, y:720, w:W, h:40, type:"ground"});
 
- // Generar las primeras plataformas desde lastGenerationY
  for(let i=0; i<12; i++){
   lastGenerationY -= 110;
   generatePlatform(lastGenerationY);
@@ -2030,18 +2241,14 @@ function startGameDirect(){
 function generatePlatform(y){
  stepCount++;
  const w = 110;
- // 3 carriles perfectamente simétricos: Izquierda (35), Centro (170), Derecha (305)
  const lanes = [35, (W - w) / 2, W - w - 35];
- // Patrón simétrico en zig-zag balanceado
  const pattern = [1, 0, 1, 2, 1, 0, 2, 1];
  const laneIndex = pattern[stepCount % pattern.length];
  const x = lanes[laneIndex];
 
- // Altura real en METROS (coincide exacto con el HUD: (720 - y) / 10)
  const altitudeMeters = Math.floor((720 - y) / 10);
- const tier = Math.floor(altitudeMeters / 1000); // 0 (<1000m), 1 (1000m+), 2 (2000m+), etc.
+ const tier = Math.floor(altitudeMeters / 1000);
 
- // Frecuencia de plataformas móviles sube cada 1000m
  const movingInterval = Math.max(2, 5 - tier);
  const isMoving = (altitudeMeters >= 200) && (stepCount % movingInterval === 0);
 
@@ -2055,12 +2262,9 @@ function generatePlatform(y){
 
  let hx = null, hy = null;
 
- // --- OBSTÁCULOS (SIERRAS): CERO HASTA LOS 500 METROS REALES ---
  if (altitudeMeters >= 500) {
-  // Cada 1000m aparecen con mayor frecuencia (de cada 5 escalones hasta cada 2 escalones)
   const sawInterval = Math.max(2, 5 - tier);
   if (stepCount % sawInterval === 0) {
-   // Colocar la sierra simétricamente en el carril opuesto al de la plataforma
    let sawLaneIndex;
    if (laneIndex === 0) sawLaneIndex = 2;
    else if (laneIndex === 2) sawLaneIndex = 0;
@@ -2069,12 +2273,10 @@ function generatePlatform(y){
    hx = lanes[sawLaneIndex] + w / 2;
    hy = y - 48;
 
-   // Garantizar espacio mínimo vertical entre sierras para que nunca se forme una barrera
    const minVerticalGap = 240;
    const hasCloseHazard = hazards.some(h => Math.abs(h.y - hy) < minVerticalGap);
 
    if (!hasCloseHazard) {
-    // Las sierras empiezan a moverse lateralmente a partir de los 1000m
     const isHazardMoving = (tier >= 1) && (stepCount % 2 === 0);
     hazards.push({
      x: hx,
@@ -2094,7 +2296,6 @@ function generatePlatform(y){
   }
  }
 
- // Power-ups espaciados de forma limpia
  if(stepCount % 4 === 0){
   const types=["lean","blunt","beer","wings","shield"];
   let type=types[Math.floor(Math.random()*types.length)];
@@ -2199,7 +2400,10 @@ function triggerDeathSequence(){
  deadMusic.play().catch(e => {});
 
  playerMoney += highest;
- localStorage.setItem("frogMoney", playerMoney);
+ if (highest > best) {
+  best = highest;
+ }
+ syncUserProgressToCloud();
 }
 
 function update(stepRatio = 1){
@@ -2235,7 +2439,6 @@ function update(stepRatio = 1){
  const dt = timeScale * stepRatio;
  frame += dt;
 
- // --- DIFICULTAD ESCALONADA DE 1000 EN 1000 METROS ---
  const levelTier = Math.floor(highest / 1000);
  difficulty = Math.min(1 + levelTier * 0.3, 3.4);
 
@@ -2302,13 +2505,11 @@ function update(stepRatio = 1){
  }
 
  if(waitingForFirstJump) {
-  // Bloqueado antes de empezar para que no se mueva como loco
   player.vx = 0;
   player.vy = 0;
   player.y = 720 - player.height / 2;
   gyroSmoothedInput = 0;
  } else {
-  // Suavizado exponencial del giroscopio para respuesta fluida
   const smoothFactor = 1 - Math.pow(0.76, dt);
   gyroSmoothedInput += (gyroTargetInput - gyroSmoothedInput) * smoothFactor;
 
@@ -2320,7 +2521,6 @@ function update(stepRatio = 1){
    player.vx += keyInput * 1.25 * dt;
    player.vx *= Math.pow(0.84, dt);
   } else if(Math.abs(gyroSmoothedInput) > 0.005) {
-   // Velocidad directa proporcional a la inclinación del celular
    const targetVx = gyroSmoothedInput * 11.2;
    player.vx += (targetVx - player.vx) * (1 - Math.pow(0.74, dt));
   } else {
@@ -2446,14 +2646,12 @@ function update(stepRatio = 1){
   return;
  }
 
- // Generación continua conforme sube la cámara
  const topBoundary = Math.min(camera, player.y) - 1100;
  while(lastGenerationY > topBoundary){
   lastGenerationY -= 110;
   generatePlatform(lastGenerationY);
  }
 
- // Limpieza limpia de entidades que ya quedaron abajo de la pantalla
  const bottomCleanup = camera + H + 150;
  platforms = platforms.filter(p => p.y < bottomCleanup);
  hazards = hazards.filter(h => h.y < bottomCleanup);
@@ -2786,16 +2984,8 @@ function endGame(){
  running=false;
  if(highest>best){
   best=highest;
-  localStorage.setItem("frogBest",best);
  }
-
- if (highest > 0 && playerName) {
-  db.collection("leaderboard").add({
-   name: playerName,
-   score: highest,
-   timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  }).catch((err) => console.error("Error guardando récord:", err));
- }
+ syncUserProgressToCloud();
 
  document.getElementById("best").textContent=best;
  document.getElementById("deadPlayerName").textContent=playerName;
