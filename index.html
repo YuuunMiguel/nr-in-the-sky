@@ -1803,7 +1803,7 @@ listenToLeaderboard();
 let running=false,paused=false,isDead=false,waitingForFirstJump=true;
 let player,platforms=[],hazards=[],powerups=[],particles=[];
 let camera=0,cameraVelocity=0;
-let highest=0,difficulty=1,lastGenerationY=0;
+let highest=0,difficulty=1,lastGenerationY=720;
 let stepCount=0;
 let frame=0,realFrame=0,shake=0,flash=0;
 let timeScale=1;
@@ -1831,7 +1831,7 @@ window.addEventListener("keydown",e=>{
 });
 window.addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
 
-// CONTROLES TÁCTILES MEJORADOS (Soporta toque y arrastre / touchmove)
+// CONTROLES TÁCTILES MEJORADOS
 const handleTouchMoveOrStart = (e) => {
  unlockAudioContext();
  if(waitingForFirstJump && running && !isDead) {
@@ -1963,11 +1963,12 @@ function startGameDirect(){
  highest=0;difficulty=1;
  frame=0;realFrame=0;shake=0;flash=0;
  timeScale=1;lastTime=0;
- lastGenerationY=620;
+ lastGenerationY=720;
  stepCount=0;
  isDead=false;
  waitingForFirstJump=true;
  lastPowerHUDHash = "";
+ document.getElementById("score").textContent = "0";
  document.getElementById("gameOverOverlay").classList.add("hidden");
  document.getElementById("powerContainer").innerHTML = "";
 
@@ -1982,7 +1983,11 @@ function startGameDirect(){
 
  platforms.push({x:0, y:720, w:W, h:40, type:"ground"});
 
- for(let i=0;i<12;i++)generatePlatform(720-(i+1)*110);
+ // Generar las primeras plataformas desde lastGenerationY
+ for(let i=0; i<12; i++){
+  lastGenerationY -= 110;
+  generatePlatform(lastGenerationY);
+ }
 
  document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
 
@@ -1994,51 +1999,79 @@ function startGameDirect(){
 function generatePlatform(y){
  stepCount++;
  const w = 110;
- // Distribución simétrica de carriles centrada en el eje del canvas
+ // 3 carriles perfectamente simétricos: Izquierda (35), Centro (170), Derecha (305)
  const lanes = [35, (W - w) / 2, W - w - 35];
- const pattern = [1, 0, 1, 2, 1, 2];
+ // Patrón simétrico en zig-zag balanceado
+ const pattern = [1, 0, 1, 2, 1, 0, 2, 1];
  const laneIndex = pattern[stepCount % pattern.length];
  const x = lanes[laneIndex];
 
- const isMoving = (stepCount % 4 === 0);
+ // Altura real en METROS (coincide exacto con el HUD: (720 - y) / 10)
+ const altitudeMeters = Math.floor((720 - y) / 10);
+ const tier = Math.floor(altitudeMeters / 1000); // 0 (<1000m), 1 (1000m+), 2 (2000m+), etc.
+
+ // Frecuencia de plataformas móviles sube cada 1000m
+ const movingInterval = Math.max(2, 5 - tier);
+ const isMoving = (altitudeMeters >= 200) && (stepCount % movingInterval === 0);
 
  const platform={
   x,y,w,h:16,
   type:isMoving?"moving":"normal",
-  dx:isMoving ? (stepCount % 8 === 0 ? 1.5 : -1.5) : 0
+  dx:isMoving ? (stepCount % 2 === 0 ? 1.4 : -1.4) : 0
  };
 
  platforms.push(platform);
 
- const platformAltitude = 720 - y;
  let hx = null, hy = null;
 
- // NO SALEN SIERRAS HASTA LOS 500 METROS
- if (platformAltitude >= 500 && stepCount % 2 === 0) {
-  const oppositeLaneIndex = 2 - laneIndex;
-  hx = lanes[oppositeLaneIndex] + w / 2;
-  hy = y - 50;
+ // --- OBSTÁCULOS (SIERRAS): CERO HASTA LOS 500 METROS REALES ---
+ if (altitudeMeters >= 500) {
+  // Cada 1000m aparecen con mayor frecuencia (de cada 5 escalones hasta cada 2 escalones)
+  const sawInterval = Math.max(2, 5 - tier);
+  if (stepCount % sawInterval === 0) {
+   // Colocar la sierra simétricamente en el carril opuesto al de la plataforma
+   let sawLaneIndex;
+   if (laneIndex === 0) sawLaneIndex = 2;
+   else if (laneIndex === 2) sawLaneIndex = 0;
+   else sawLaneIndex = (stepCount % 2 === 0) ? 0 : 2;
 
-  const isHazardMoving = (stepCount % 3 !== 0);
-  hazards.push({
-   x:hx,y:hy,r:17,
-   angle:0,
-   moving: isHazardMoving,
-   dx: isHazardMoving ? 1.8 : 0,
-   minX: lanes[0] + 15,
-   maxX: lanes[2] + w - 15,
-   speed:0.09 * (stepCount % 2 === 0 ? 1 : -1)
-  });
+   hx = lanes[sawLaneIndex] + w / 2;
+   hy = y - 48;
+
+   // Garantizar espacio mínimo vertical entre sierras para que nunca se forme una barrera
+   const minVerticalGap = 240;
+   const hasCloseHazard = hazards.some(h => Math.abs(h.y - hy) < minVerticalGap);
+
+   if (!hasCloseHazard) {
+    // Las sierras empiezan a moverse lateralmente a partir de los 1000m
+    const isHazardMoving = (tier >= 1) && (stepCount % 2 === 0);
+    hazards.push({
+     x: hx,
+     y: hy,
+     r: 17,
+     angle: 0,
+     moving: isHazardMoving,
+     dx: isHazardMoving ? (1.3 + Math.min(tier * 0.25, 1.5)) : 0,
+     minX: lanes[0] + 20,
+     maxX: lanes[2] + w - 20,
+     speed: (0.08 + Math.min(tier * 0.015, 0.08)) * (stepCount % 2 === 0 ? 1 : -1)
+    });
+   } else {
+    hx = null;
+    hy = null;
+   }
+  }
  }
 
- if(stepCount % 3 === 0){
+ // Power-ups espaciados de forma limpia
+ if(stepCount % 4 === 0){
   const types=["lean","blunt","beer","wings","shield"];
   let type=types[Math.floor(Math.random()*types.length)];
   let px = x + w / 2;
-  let py = y - 50;
+  let py = y - 45;
 
-  if(hx !== null && Math.hypot(px - hx, py - hy) < 65) {
-   px = x + 25;
+  if(hx !== null && Math.hypot(px - hx, py - hy) < 70) {
+   px = lanes[1] + w / 2;
   }
 
   powerups.push({
@@ -2172,8 +2205,8 @@ function update(stepRatio = 1){
  frame += dt;
 
  // --- DIFICULTAD ESCALONADA DE 1000 EN 1000 METROS ---
- difficulty = 1 + Math.floor(highest / 1000) * 0.35;
- if (difficulty > 3.5) difficulty = 3.5;
+ const levelTier = Math.floor(highest / 1000);
+ difficulty = Math.min(1 + levelTier * 0.3, 3.4);
 
  if(player.invuln > 0) player.invuln -= stepRatio;
 
@@ -2292,14 +2325,14 @@ function update(stepRatio = 1){
  for(let p of platforms){
   if(p.type==="moving"){
    p.x+=p.dx*difficulty*.6*dt;
-   if(p.x<15||p.x+p.w>W-15)p.dx*=-1;
+   if(p.x<20||p.x+p.w>W-20)p.dx*=-1;
   }
  }
 
  for(let h of hazards){
   h.angle+=h.speed*difficulty*dt;
   if(h.moving){
-   h.x += h.dx * difficulty * dt;
+   h.x += h.dx * difficulty * 0.75 * dt;
    if(h.x < h.minX || h.x > h.maxX) h.dx *= -1;
   }
 
@@ -2309,7 +2342,7 @@ function update(stepRatio = 1){
    if(hasShield){
     playHitSound();
     burst(h.x,h.y,"#ffe45c",14);
-    h.y=-9999;
+    h.y = camera + H + 500;
     player.activePowers = player.activePowers.filter(p => p.type !== "shield");
     shake=12;
    }else if(player.invuln<=0){
@@ -2317,7 +2350,7 @@ function update(stepRatio = 1){
     player.lives--;
     updateLivesHUD();
     burst(player.x,player.y,"#ff3b5c",18);
-    h.y=-9999;
+    h.y = camera + H + 500;
 
     if(player.lives<=0){
      triggerDeathSequence();
@@ -2366,14 +2399,18 @@ function update(stepRatio = 1){
   return;
  }
 
- while(lastGenerationY>camera-1150){
-  lastGenerationY-=110;
+ // Generación continua conforme sube la cámara
+ const topBoundary = Math.min(camera, player.y) - 1100;
+ while(lastGenerationY > topBoundary){
+  lastGenerationY -= 110;
   generatePlatform(lastGenerationY);
  }
 
- platforms=platforms.filter(p=>p.y<camera+H+120);
- hazards=hazards.filter(h=>h.y<camera+H+120&&h.y>-10000);
- powerups=powerups.filter(p=>!p.collected&&p.y<camera+H+120);
+ // Limpieza limpia de entidades que ya quedaron abajo de la pantalla
+ const bottomCleanup = camera + H + 150;
+ platforms = platforms.filter(p => p.y < bottomCleanup);
+ hazards = hazards.filter(h => h.y < bottomCleanup);
+ powerups = powerups.filter(p => !p.collected && p.y < bottomCleanup);
 
  for (let i = particles.length - 1; i >= 0; i--) {
   const p = particles[i];
