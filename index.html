@@ -1813,6 +1813,52 @@ let animationId;
 let skullAnimId;
 let lastPowerHUDHash = "";
 
+// --- GIROSCOPIO SUAVIZADO CON ZONA MUERTA ---
+let gyroTargetInput = 0;
+let gyroSmoothedInput = 0;
+let gyroPermissionRequested = false;
+
+function handleDeviceOrientation(e) {
+ if (e.gamma === null || typeof e.gamma === "undefined") return;
+
+ let gamma = e.gamma;
+ const angle = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
+ if (angle === 90 && e.beta !== null) {
+  gamma = e.beta;
+ } else if (angle === -90 && e.beta !== null) {
+  gamma = -e.beta;
+ }
+
+ // Zona muerta considerable de +/- 7 grados para evitar movimientos nerviosos
+ const deadzone = 7;
+ const maxTilt = 28;
+
+ if (Math.abs(gamma) <= deadzone) {
+  gyroTargetInput = 0;
+ } else {
+  const sign = gamma > 0 ? 1 : -1;
+  const effective = Math.min(Math.abs(gamma) - deadzone, maxTilt - deadzone);
+  gyroTargetInput = sign * (effective / (maxTilt - deadzone));
+ }
+}
+
+function enableGyroscope() {
+ if (gyroPermissionRequested) return;
+ gyroPermissionRequested = true;
+
+ if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
+  DeviceOrientationEvent.requestPermission()
+   .then(state => {
+    if (state === "granted") {
+     window.addEventListener("deviceorientation", handleDeviceOrientation, true);
+    }
+   })
+   .catch(() => {});
+ } else if ("DeviceOrientationEvent" in window) {
+  window.addEventListener("deviceorientation", handleDeviceOrientation, true);
+ }
+}
+
 document.getElementById("best").textContent=best;
 
 const keys={};
@@ -1831,33 +1877,14 @@ window.addEventListener("keydown",e=>{
 });
 window.addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
 
-// CONTROLES TÁCTILES MEJORADOS
-const handleTouchMoveOrStart = (e) => {
+// EN MÓVIL: Tocar la pantalla solo sirve para dar el primer salto
+canvas.addEventListener("touchstart", (e) => {
  unlockAudioContext();
  if(waitingForFirstJump && running && !isDead) {
+  e.preventDefault();
   triggerFirstJump();
-  return;
  }
- if (e.touches.length > 0) {
-  const rect = canvas.getBoundingClientRect();
-  const touchX = e.touches[0].clientX - rect.left;
-  if (touchX < rect.width / 2) {
-   keys["touchleft"] = true;
-   keys["touchright"] = false;
-  } else {
-   keys["touchright"] = true;
-   keys["touchleft"] = false;
-  }
- }
-};
-
-canvas.addEventListener("touchstart", handleTouchMoveOrStart, { passive: true });
-canvas.addEventListener("touchmove", handleTouchMoveOrStart, { passive: true });
-
-canvas.addEventListener("touchend", () => {
- keys["touchleft"] = false;
- keys["touchright"] = false;
-});
+}, { passive: false });
 
 canvas.addEventListener("click", () => {
  if(waitingForFirstJump && running && !isDead) {
@@ -1867,6 +1894,8 @@ canvas.addEventListener("click", () => {
 
 function triggerFirstJump(){
  waitingForFirstJump = false;
+ gyroSmoothedInput = 0;
+ player.vx = 0;
  player.vy = -16;
  playWingsSound();
  burst(player.x, player.y + 18, "#75ff9b", 10);
@@ -1941,6 +1970,7 @@ function goToShopScreenFromDeath() {
 
 function startReadyGame() {
  unlockAudioContext();
+ enableGyroscope();
  cancelAnimationFrame(avatarAnimId);
  
  introMusic.pause();
@@ -1967,6 +1997,7 @@ function startGameDirect(){
  stepCount=0;
  isDead=false;
  waitingForFirstJump=true;
+ gyroSmoothedInput=0;
  lastPowerHUDHash = "";
  document.getElementById("score").textContent = "0";
  document.getElementById("gameOverOverlay").classList.add("hidden");
@@ -2270,26 +2301,42 @@ function update(stepRatio = 1){
   }
  }
 
- let acceleration = 1.25 * dt;
-
- if(keys["arrowleft"]||keys["a"]||keys["touchleft"]) player.vx -= acceleration;
- if(keys["arrowright"]||keys["d"]||keys["touchright"]) player.vx += acceleration;
-
- if(hasBeer){
-  player.vx += Math.sin(frame * 0.14) * 0.45 * dt;
- }
-
- player.vx *= Math.pow(0.84, dt);
- player.vx = clamp(player.vx, -11.5, 11.5);
- player.x += player.vx * dt;
-
- if(player.x<-20)player.x=W+20;
- if(player.x>W+20)player.x=-20;
-
  if(waitingForFirstJump) {
+  // Bloqueado antes de empezar para que no se mueva como loco
+  player.vx = 0;
   player.vy = 0;
   player.y = 720 - player.height / 2;
+  gyroSmoothedInput = 0;
  } else {
+  // Suavizado exponencial del giroscopio para respuesta fluida
+  const smoothFactor = 1 - Math.pow(0.76, dt);
+  gyroSmoothedInput += (gyroTargetInput - gyroSmoothedInput) * smoothFactor;
+
+  let keyInput = 0;
+  if(keys["arrowleft"] || keys["a"]) keyInput -= 1;
+  if(keys["arrowright"] || keys["d"]) keyInput += 1;
+
+  if(keyInput !== 0) {
+   player.vx += keyInput * 1.25 * dt;
+   player.vx *= Math.pow(0.84, dt);
+  } else if(Math.abs(gyroSmoothedInput) > 0.005) {
+   // Velocidad directa proporcional a la inclinación del celular
+   const targetVx = gyroSmoothedInput * 11.2;
+   player.vx += (targetVx - player.vx) * (1 - Math.pow(0.74, dt));
+  } else {
+   player.vx *= Math.pow(0.82, dt);
+  }
+
+  if(hasBeer){
+   player.vx += Math.sin(frame * 0.14) * 0.45 * dt;
+  }
+
+  player.vx = clamp(player.vx, -11.5, 11.5);
+  player.x += player.vx * dt;
+
+  if(player.x<-20)player.x=W+20;
+  if(player.x>W+20)player.x=-20;
+
   if(hasWings){
    player.vy=Math.min(player.vy+.18*dt,-2.5);
   }else if(hasBeer && player.vy > 0){
@@ -3369,13 +3416,13 @@ function draw(){
   ctx.lineWidth = 2.5;
   ctx.strokeRect(15, H / 2 - 42, W - 30, 84);
 
-  ctx.font = "bold 11px 'Press Start 2P', monospace";
+  ctx.font = "bold 10px 'Press Start 2P', monospace";
   ctx.fillStyle = "#65ffae";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(isMobileDevice ? "¡TOCA LA PANTALLA O" : "¡USA LAS FLECHAS O A/D", W/2, H / 2 - 14);
+  ctx.fillText(isMobileDevice ? "¡TOCA PARA BRINCAR" : "¡USA LAS FLECHAS O A/D", W/2, H / 2 - 14);
   ctx.fillStyle = "#ff5de5";
-  ctx.fillText(isMobileDevice ? "ESPACIO PARA BRINCAR!" : "Y ESPACIO PARA BRINCAR!", W/2, H / 2 + 14);
+  ctx.fillText(isMobileDevice ? "Y INCLINA EL CELULAR!" : "Y ESPACIO PARA BRINCAR!", W/2, H / 2 + 14);
   ctx.textBaseline = "alphabetic";
  }
 
