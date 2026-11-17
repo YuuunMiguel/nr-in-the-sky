@@ -27,13 +27,21 @@ body{
  background:#1a82e2;
 }
 canvas{width:100%;height:100%;display:block;}
+
+/* HUD TRANSLÚCIDO */
 #hud{
  position:absolute;top:12px;left:12px;right:12px;
  display:flex;justify-content:space-between;align-items:center;
  pointer-events:none;font-size:19px;z-index:2;
 }
 #hud div{
- padding:5px 8px;background:rgba(8,4,20,0.88);
+ padding:5px 9px;
+ background:rgba(8, 4, 20, 0.36);
+ border:1px solid rgba(255, 255, 255, 0.16);
+ border-radius:6px;
+ backdrop-filter:blur(2px);
+ -webkit-backdrop-filter:blur(2px);
+ text-shadow:1px 1px 2px rgba(0, 0, 0, 0.85);
 }
 #livesDisplay{letter-spacing:2px;}
 #powerContainer{
@@ -47,17 +55,18 @@ canvas{width:100%;height:100%;display:block;}
 .power-label{
  font-size:16px;
  line-height:1;
+ text-shadow:1px 1px 2px rgba(0, 0, 0, 0.85);
 }
 .timer-bar-bg{
- width:100%;height:6px;background:rgba(0,0,0,0.55);
- border:1px solid rgba(255,255,255,0.25);
+ width:100%;height:6px;background:rgba(0,0,0,0.42);
+ border:1px solid rgba(255,255,255,0.2);
  border-radius:3px;overflow:hidden;
 }
 .timer-bar-fill{
  height:100%;
 }
 
-/* CONTROLES INFERIORES CENTRALES */
+/* BOTÓN DE PAUSA INFERIOR (SOLO EN PARTIDA) */
 #bottomControls {
  position: absolute;
  bottom: 15px;
@@ -65,7 +74,7 @@ canvas{width:100%;height:100%;display:block;}
  transform: translateX(-50%);
  display: flex;
  gap: 10px;
- z-index: 10;
+ z-index: 4;
  pointer-events: auto;
 }
 .ctrl-btn {
@@ -73,8 +82,8 @@ canvas{width:100%;height:100%;display:block;}
  height: 45px;
  padding: 0;
  color: white;
- background: rgba(23, 8, 44, 0.9);
- border: 2px solid #ff59d8;
+ background: rgba(23, 8, 44, 0.55);
+ border: 2px solid rgba(255, 89, 216, 0.75);
  border-radius: 12px;
  font-family: 'Press Start 2P';
  font-size: 16px;
@@ -84,7 +93,9 @@ canvas{width:100%;height:100%;display:block;}
  cursor: pointer;
  user-select: none;
  -webkit-user-select: none;
- box-shadow: 0 0 8px rgba(255, 89, 216, 0.3);
+ box-shadow: 0 0 8px rgba(255, 89, 216, 0.25);
+ backdrop-filter: blur(2px);
+ -webkit-backdrop-filter: blur(2px);
 }
 .ctrl-btn:active {
  transform: scale(0.90);
@@ -132,7 +143,8 @@ canvas{width:100%;height:100%;display:block;}
  display:flex;
  align-items:center;
 }
-.screen input{
+.screen input[type="text"],
+.screen input[type="password"]{
  font-family:'VT323',monospace;font-size:20px;
  padding:4px 8px;background:#100822;border:2px solid #65ffae;
  color:#65ffae;text-align:center;width:88%;max-width:230px;
@@ -186,6 +198,114 @@ canvas{width:100%;height:100%;display:block;}
  0%, 100% { transform: translateX(0); }
  25% { transform: translateX(-6px); }
  75% { transform: translateX(6px); }
+}
+
+/* VENTANA DE PAUSA Y VOLUMEN */
+.pause-modal{
+ width:90%;
+ max-width:330px;
+ background:rgba(16, 7, 32, 0.96);
+ border:3px solid #ff59d8;
+ border-radius:10px;
+ padding:16px 14px;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ gap:10px;
+ box-shadow:0 0 18px rgba(156, 0, 255, 0.35);
+}
+.volume-control-group{
+ width:100%;
+ display:flex;
+ flex-direction:column;
+ gap:4px;
+ background:rgba(8, 3, 20, 0.75);
+ border:1px solid #9c00ff;
+ border-radius:6px;
+ padding:8px 10px;
+}
+.volume-header{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ font-family:'Press Start 2P';
+ font-size:7.5px;
+ color:#d8ffff;
+}
+.volume-header span:last-child{
+ color:#ffbe2e;
+}
+input[type="range"].retro-slider{
+ -webkit-appearance:none;
+ appearance:none;
+ width:100%;
+ height:8px;
+ background:#1d0c3b;
+ border:1px solid #65ffae;
+ border-radius:4px;
+ outline:none;
+ cursor:pointer;
+}
+input[type="range"].retro-slider::-webkit-slider-thumb{
+ -webkit-appearance:none;
+ appearance:none;
+ width:16px;
+ height:16px;
+ background:#ff00ce;
+ border:2px solid #ffffff;
+ border-radius:3px;
+ cursor:pointer;
+}
+input[type="range"].retro-slider::-moz-range-thumb{
+ width:16px;
+ height:16px;
+ background:#ff00ce;
+ border:2px solid #ffffff;
+ border-radius:3px;
+ cursor:pointer;
+}
+.pause-actions{
+ display:flex;
+ flex-direction:column;
+ gap:8px;
+ width:100%;
+ margin-top:2px;
+}
+.pause-actions button{
+ width:100%;
+ margin-top:0 !important;
+ padding:10px 12px !important;
+}
+.btn-danger{
+ background:#ff3b5c !important;
+ color:#ffffff !important;
+}
+.confirm-box{
+ width:100%;
+ background:rgba(38, 8, 32, 0.95);
+ border:2px solid #ffbe2e;
+ border-radius:8px;
+ padding:10px;
+ display:flex;
+ flex-direction:column;
+ gap:8px;
+}
+.confirm-box p{
+ font-family:'Press Start 2P';
+ font-size:8px;
+ line-height:1.45;
+ color:#ffbe2e;
+ margin:0;
+}
+.confirm-btns{
+ display:flex;
+ gap:8px;
+ justify-content:center;
+}
+.confirm-btns button{
+ flex:1;
+ margin-top:0 !important;
+ padding:8px 10px !important;
 }
 
 /* SKIN SHOP ESTILO KIOSKO */
@@ -318,9 +438,9 @@ canvas{width:100%;height:100%;display:block;}
  width:100%;height:100%;display:block;
 }
 .skip-hint{
- position:absolute;bottom:14px;left:0;right:0;
+ position:absolute;top:14px;left:0;right:0;
  text-align:center;font-family:'Press Start 2P';
- font-size:8px;color:rgba(255,255,255,0.8);
+ font-size:7.5px;color:rgba(255,255,255,0.72);
  pointer-events:none;
 }
 
@@ -378,10 +498,9 @@ canvas{width:100%;height:100%;display:block;}
 </div>
 <div id="powerContainer"></div>
 
-<!-- Botones inferiores centrales juntos -->
-<div id="bottomControls">
- <button id="muteBtn" class="ctrl-btn" onclick="toggleMute()">🔊</button>
- <button id="pauseBtn" class="ctrl-btn" onclick="togglePause()">Ⅱ</button>
+<!-- Botón de pausa oculto hasta que empiece la partida -->
+<div id="bottomControls" class="hidden">
+ <button id="pauseBtn" class="ctrl-btn" onclick="playMenuClick(); togglePause()">Ⅱ</button>
 </div>
 
 <!-- Pantalla 1: Registro / Inicio de Sesión -->
@@ -433,10 +552,41 @@ canvas{width:100%;height:100%;display:block;}
  <button onclick="playMenuClick(); startReadyGame()">READY!</button>
 </div>
 
+<!-- Pantalla de Pausa con Controles de Volumen y Confirmación -->
 <div id="pauseScreen" class="screen hidden">
- <h1>PAUSED</h1>
- <p>DESCANSANDO EN LAS NUBES</p>
- <button onclick="playMenuClick(); togglePause()">CONTINUE</button>
+ <div class="pause-modal">
+  <h1>PAUSED</h1>
+  <p style="margin:0;color:#ff9ecd;">DESCANSANDO EN LAS NUBES</p>
+
+  <div class="volume-control-group">
+   <div class="volume-header">
+    <span>🎵 MÚSICA</span>
+    <span id="musicVolVal">50%</span>
+   </div>
+   <input type="range" id="musicVolSlider" class="retro-slider" min="0" max="100" value="50" oninput="updateMusicVolume(this.value)">
+  </div>
+
+  <div class="volume-control-group">
+   <div class="volume-header">
+    <span>🔊 EFECTOS (FX)</span>
+    <span id="fxVolVal">100%</span>
+   </div>
+   <input type="range" id="fxVolSlider" class="retro-slider" min="0" max="100" value="100" oninput="updateFxVolume(this.value)">
+  </div>
+
+  <div id="pauseMainActions" class="pause-actions">
+   <button onclick="playMenuClick(); togglePause()">CONTINUE</button>
+   <button class="btn-danger" onclick="playMenuClick(); showQuitShopConfirm()">SALIR AL SHOP</button>
+  </div>
+
+  <div id="quitShopConfirmBox" class="confirm-box hidden">
+   <p>¿SEGURO QUE QUIERES SALIR AL MENÚ DE SHOP?<br>PERDERÁS EL PROGRESO DE ESTA PARTIDA.</p>
+   <div class="confirm-btns">
+    <button class="btn-danger" onclick="playMenuClick(); confirmExitToShop()">SÍ</button>
+    <button onclick="playMenuClick(); cancelQuitShopConfirm()">NO</button>
+   </div>
+  </div>
+ </div>
 </div>
 
 <div id="gameOverOverlay" class="hidden">
@@ -548,6 +698,31 @@ function drawFloatingWaveText(ictx, text, centerX, centerY, timeSec, fontSize, f
   ictx.fillText(ch, 0, 0);
   ictx.restore();
  });
+}
+
+function drawIntroCredits8Bit(ictx, elapsed) {
+ const pulse = 0.85 + Math.sin(elapsed * 5) * 0.15;
+ ictx.save();
+ ictx.globalAlpha = pulse;
+ ictx.textAlign = "center";
+ ictx.textBaseline = "middle";
+
+ const lines = [
+  { text: "C30 ENT. PRESENTS", y: H - 56, color: "#78ff9c", size: 8.5 },
+  { text: "A ZAZYGANG ORIGINAL", y: H - 38, color: "#ffbe2e", size: 8.5 },
+  { text: "© 2026 ALL RIGHTS RESERVED.", y: H - 20, color: "#d8ffff", size: 7.5 }
+ ];
+
+ lines.forEach(line => {
+  ictx.font = `bold ${line.size}px 'Press Start 2P', monospace`;
+  ictx.lineWidth = 3;
+  ictx.strokeStyle = "#07020e";
+  ictx.strokeText(line.text, W / 2, line.y);
+  ictx.fillStyle = line.color;
+  ictx.fillText(line.text, W / 2, line.y);
+ });
+
+ ictx.restore();
 }
 
 function drawIntroDollar(ictx, x, y, angle) {
@@ -930,6 +1105,9 @@ function runLooneyIntro(timestamp) {
  ictx.restore();
  ictx.restore();
 
+ // Letras 8-bit inferiores en el intro
+ drawIntroCredits8Bit(ictx, elapsed);
+
  let irisRadius = maxR;
  if (elapsed < 0.65) {
   irisRadius = (elapsed / 0.65) * maxR;
@@ -957,15 +1135,20 @@ function runLooneyIntro(timestamp) {
 }
 introAnimId = requestAnimationFrame(runLooneyIntro);
 
-// --- SISTEMA DE AUDIO & MÚSICA & MUTE CON .MP3 ---
-let isMuted = false;
+// --- SISTEMA DE AUDIO & VOLUMEN INDEPENDIENTE (MÚSICA Y FX) ---
+let musicVolume = 0.5;
+let fxVolume = 1.0;
+
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const fxMasterGain = audioCtx.createGain();
+fxMasterGain.gain.value = fxVolume;
+fxMasterGain.connect(audioCtx.destination);
 
 function unlockAudioContext() {
  if (audioCtx && audioCtx.state === 'suspended') {
   audioCtx.resume();
  }
- if (!isMuted) {
+ if (musicVolume > 0) {
   if (introMusic.paused && !document.getElementById("shopScreen").classList.contains("hidden")) {
    introMusic.play().catch(e => {});
   }
@@ -979,36 +1162,33 @@ window.addEventListener('pointerdown', unlockAudioContext, { once: true });
 window.addEventListener('touchstart', unlockAudioContext, { once: true });
 window.addEventListener('click', unlockAudioContext);
 
-function toggleMute() {
- unlockAudioContext();
- isMuted = !isMuted;
- const muteBtn = document.getElementById("muteBtn");
- muteBtn.textContent = isMuted ? "🔇" : "🔊";
-
- introMusic.muted = isMuted;
- bgMusic.muted = isMuted;
- deadMusic.muted = isMuted;
-
- if (!isMuted) {
-  if (running && !paused && !isDead) {
-   bgMusic.play().catch(e => {});
-  } else {
-   introMusic.play().catch(e => {});
-  }
- }
-}
-
 const introMusic = new Audio('intro.mp3');
 introMusic.loop = true;
-introMusic.volume = 0.5;
+introMusic.volume = musicVolume;
 
 const bgMusic = new Audio('fye.mp3');
 bgMusic.loop = true;
-bgMusic.volume = 0.5;
+bgMusic.volume = musicVolume;
 
 const deadMusic = new Audio('dead.mp3');
 deadMusic.loop = false;
-deadMusic.volume = 0.6;
+deadMusic.volume = Math.min(1, musicVolume * 1.15);
+
+function updateMusicVolume(val) {
+ const pct = Number(val);
+ musicVolume = pct / 100;
+ document.getElementById("musicVolVal").textContent = `${pct}%`;
+ introMusic.volume = musicVolume;
+ bgMusic.volume = musicVolume;
+ deadMusic.volume = Math.min(1, musicVolume * 1.15);
+}
+
+function updateFxVolume(val) {
+ const pct = Number(val);
+ fxVolume = pct / 100;
+ document.getElementById("fxVolVal").textContent = `${pct}%`;
+ fxMasterGain.gain.setValueAtTime(fxVolume, audioCtx.currentTime);
+}
 
 function createNoiseBuffer(duration) {
  const bufferSize = Math.floor(audioCtx.sampleRate * duration);
@@ -1021,12 +1201,12 @@ function createNoiseBuffer(duration) {
 }
 
 function playMenuClick() {
- if (isMuted) return;
+ if (fxVolume <= 0) return;
  unlockAudioContext();
  const osc = audioCtx.createOscillator();
  const gain = audioCtx.createGain();
  osc.connect(gain);
- gain.connect(audioCtx.destination);
+ gain.connect(fxMasterGain);
  const now = audioCtx.currentTime;
  osc.type = 'triangle';
  osc.frequency.setValueAtTime(320, now);
@@ -1038,12 +1218,12 @@ function playMenuClick() {
 }
 
 function playHitSound() {
- if (isMuted) return;
+ if (fxVolume <= 0) return;
  unlockAudioContext();
  const osc = audioCtx.createOscillator();
  const gain = audioCtx.createGain();
  osc.connect(gain);
- gain.connect(audioCtx.destination);
+ gain.connect(fxMasterGain);
  const now = audioCtx.currentTime;
  osc.type = 'sawtooth';
  osc.frequency.setValueAtTime(180, now);
@@ -1055,12 +1235,12 @@ function playHitSound() {
 }
 
 function playPowerupSound() {
- if (isMuted) return;
+ if (fxVolume <= 0) return;
  unlockAudioContext();
  const osc = audioCtx.createOscillator();
  const gain = audioCtx.createGain();
  osc.connect(gain);
- gain.connect(audioCtx.destination);
+ gain.connect(fxMasterGain);
  const now = audioCtx.currentTime;
  osc.type = 'sine';
  osc.frequency.setValueAtTime(400, now);
@@ -1072,7 +1252,7 @@ function playPowerupSound() {
 }
 
 function playLeanSound() {
- if (isMuted) return;
+ if (fxVolume <= 0) return;
  unlockAudioContext();
  const now = audioCtx.currentTime;
  [0, 0.09, 0.19].forEach((offset, idx) => {
@@ -1085,7 +1265,7 @@ function playLeanSound() {
   iceGain.gain.setValueAtTime(0.16, now + offset);
   iceGain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.065);
   iceOsc.connect(iceGain);
-  iceGain.connect(audioCtx.destination);
+  iceGain.connect(fxMasterGain);
   iceOsc.start(now + offset);
   iceOsc.stop(now + offset + 0.07);
  });
@@ -1099,7 +1279,7 @@ function playLeanSound() {
  pourGain.gain.linearRampToValueAtTime(0.22, now + 0.08);
  pourGain.gain.exponentialRampToValueAtTime(0.005, now + 0.58);
  pourOsc.connect(pourGain);
- pourGain.connect(audioCtx.destination);
+ pourGain.connect(fxMasterGain);
  pourOsc.start(now);
  pourOsc.stop(now + 0.6);
 
@@ -1114,12 +1294,12 @@ function playLeanSound() {
  fizzGain.gain.exponentialRampToValueAtTime(0.003, now + 0.65);
  fizz.connect(fizzFilter);
  fizzFilter.connect(fizzGain);
- fizzGain.connect(audioCtx.destination);
+ fizzGain.connect(fxMasterGain);
  fizz.start(now);
 }
 
 function playBurpSound() {
- if (isMuted) return;
+ if (fxVolume <= 0) return;
  unlockAudioContext();
  const now = audioCtx.currentTime;
  const gulpOsc = audioCtx.createOscillator();
@@ -1131,7 +1311,7 @@ function playBurpSound() {
  gulpGain.gain.setValueAtTime(0.26, now);
  gulpGain.gain.exponentialRampToValueAtTime(0.01, now + 0.17);
  gulpOsc.connect(gulpGain);
- gulpGain.connect(audioCtx.destination);
+ gulpGain.connect(fxMasterGain);
  gulpOsc.start(now);
  gulpOsc.stop(now + 0.18);
 
@@ -1145,7 +1325,7 @@ function playBurpSound() {
  foamGain.gain.exponentialRampToValueAtTime(0.005, now + 0.25);
  foam.connect(foamFilter);
  foamFilter.connect(foamGain);
- foamGain.connect(audioCtx.destination);
+ foamGain.connect(fxMasterGain);
  foam.start(now);
 
  const burpStart = now + 0.19;
@@ -1171,7 +1351,7 @@ function playBurpSound() {
  burpOsc.connect(formant);
  burpSub.connect(formant);
  formant.connect(burpGain);
- burpGain.connect(audioCtx.destination);
+ burpGain.connect(fxMasterGain);
  burpOsc.start(burpStart);
  burpSub.start(burpStart);
  burpOsc.stop(burpStart + 0.45);
@@ -1179,7 +1359,7 @@ function playBurpSound() {
 }
 
 function playSmokeInhaleSound() {
- if (isMuted) return;
+ if (fxVolume <= 0) return;
  unlockAudioContext();
  const now = audioCtx.currentTime;
  const inhale = audioCtx.createBufferSource();
@@ -1196,7 +1376,7 @@ function playSmokeInhaleSound() {
  inhaleGain.gain.exponentialRampToValueAtTime(0.008, now + 0.62);
  inhale.connect(inhaleFilter);
  inhaleFilter.connect(inhaleGain);
- inhaleGain.connect(audioCtx.destination);
+ inhaleGain.connect(fxMasterGain);
  inhale.start(now);
 
  [0.06, 0.14, 0.21, 0.29, 0.36, 0.44].forEach((offset) => {
@@ -1210,7 +1390,7 @@ function playSmokeInhaleSound() {
   cGain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.025);
   crackle.connect(cFilter);
   cFilter.connect(cGain);
-  cGain.connect(audioCtx.destination);
+  cGain.connect(fxMasterGain);
   crackle.start(now + offset);
  });
 
@@ -1227,12 +1407,12 @@ function playSmokeInhaleSound() {
  exhaleGain.gain.exponentialRampToValueAtTime(0.003, exhaleStart + 0.45);
  exhale.connect(exhaleFilter);
  exhaleFilter.connect(exhaleGain);
- exhaleGain.connect(audioCtx.destination);
+ exhaleGain.connect(fxMasterGain);
  exhale.start(exhaleStart);
 }
 
 function playWingsSound() {
- if (isMuted) return;
+ if (fxVolume <= 0) return;
  unlockAudioContext();
  const now = audioCtx.currentTime;
  [0, 0.18].forEach((offset, idx) => {
@@ -1250,13 +1430,13 @@ function playWingsSound() {
   gain.gain.exponentialRampToValueAtTime(0.005, now + offset + 0.24);
   flap.connect(filter);
   filter.connect(gain);
-  gain.connect(audioCtx.destination);
+  gain.connect(fxMasterGain);
   flap.start(now + offset);
  });
 }
 
 function playShieldSound() {
- if (isMuted) return;
+ if (fxVolume <= 0) return;
  unlockAudioContext();
  const now = audioCtx.currentTime;
  [523.25, 783.99, 1046.5].forEach((freq, idx) => {
@@ -1269,7 +1449,7 @@ function playShieldSound() {
   gain.gain.linearRampToValueAtTime(0.16, now + 0.04);
   gain.gain.exponentialRampToValueAtTime(0.002, now + 0.45);
   osc.connect(gain);
-  gain.connect(audioCtx.destination);
+  gain.connect(fxMasterGain);
   osc.start(now);
   osc.stop(now + 0.46);
  });
@@ -1393,7 +1573,6 @@ function validatePasswordRules(pwd) {
  if (!allowedSpecialRegex.test(pwd)) {
   return "⚠️ INCLUYE UN ESPECIAL: !@#$%^&*()_+-=[]{};:,.?";
  }
- // Verificar que no contenga caracteres no permitidos (espacios, emojis, etc.)
  const fullAllowedRegex = /^[A-Za-z0-9!@#$%^&*()_+\-=\[\]{};:,.?]+$/;
  if (!fullAllowedRegex.test(pwd)) {
   return "⚠️ SOLO LETRAS, NÚMEROS Y !@#$%^&*()_+-=[]{};:,.?";
@@ -1462,7 +1641,6 @@ async function authenticateAndGoToShop() {
   const docSnap = await userRef.get();
 
   if (docSnap.exists) {
-   // El nombre ya está registrado: comprobar contraseña para iniciar sesión
    const userData = docSnap.data();
    if (userData.passwordHash !== inputHash) {
     submitBtn.disabled = false;
@@ -1476,7 +1654,6 @@ async function authenticateAndGoToShop() {
    msgEl.classList.add("ok");
    msgEl.textContent = `✅ ¡BIENVENIDO DE VUELTA, ${playerName}!`;
   } else {
-   // Nombre disponible: validar reglas estrictas de contraseña para registrar cuenta nueva
    const pwdError = validatePasswordRules(rawPass);
    if (pwdError) {
     submitBtn.disabled = false;
@@ -1524,6 +1701,7 @@ function openShopAfterAuth() {
  cancelAnimationFrame(skullAnimId);
  cancelAnimationFrame(avatarAnimId);
  document.getElementById("gameOverOverlay").classList.add("hidden");
+ document.getElementById("bottomControls").classList.add("hidden");
 
  bgMusic.pause();
  bgMusic.currentTime = 0;
@@ -2172,6 +2350,7 @@ function goToShopScreenFromDeath() {
  bgMusic.currentTime = 0;
 
  document.getElementById("gameOverOverlay").classList.add("hidden");
+ document.getElementById("bottomControls").classList.add("hidden");
  document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
  document.getElementById("shopScreen").classList.remove("hidden");
  renderSkinShop();
@@ -2214,6 +2393,7 @@ function startGameDirect(){
  document.getElementById("score").textContent = "0";
  document.getElementById("gameOverOverlay").classList.add("hidden");
  document.getElementById("powerContainer").innerHTML = "";
+ document.getElementById("bottomControls").classList.remove("hidden");
 
  player={
   x:225,y:720 - 19,vx:0,vy:0,
@@ -2393,6 +2573,7 @@ function triggerDeathSequence(){
  player.invuln = 999;
  shake = 15;
  flash = 0.8;
+ document.getElementById("bottomControls").classList.add("hidden");
  
  bgMusic.pause();
  introMusic.pause();
@@ -2982,6 +3163,7 @@ function animateCustomSkull(){
 
 function endGame(){
  running=false;
+ document.getElementById("bottomControls").classList.add("hidden");
  if(highest>best){
   best=highest;
  }
@@ -3002,10 +3184,33 @@ function togglePause(){
  if(!running&&!paused)return;
  paused=!paused;
  document.getElementById("pauseScreen").classList.toggle("hidden",!paused);
+ cancelQuitShopConfirm();
  if(!paused&&running){
   lastTime=0;
   animationId = requestAnimationFrame(loop);
  }
+}
+
+function showQuitShopConfirm(){
+ document.getElementById("pauseMainActions").classList.add("hidden");
+ document.getElementById("quitShopConfirmBox").classList.remove("hidden");
+}
+
+function cancelQuitShopConfirm(){
+ document.getElementById("quitShopConfirmBox").classList.add("hidden");
+ document.getElementById("pauseMainActions").classList.remove("hidden");
+}
+
+function confirmExitToShop(){
+ running = false;
+ paused = false;
+ isDead = false;
+ cancelAnimationFrame(animationId);
+ cancelQuitShopConfirm();
+ document.getElementById("pauseScreen").classList.add("hidden");
+ document.getElementById("bottomControls").classList.add("hidden");
+ document.getElementById("powerContainer").innerHTML = "";
+ openShopAfterAuth();
 }
 
 const bgGradients = {
